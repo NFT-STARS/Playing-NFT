@@ -105,15 +105,26 @@
         }
 
         function tryOpenCase() {
-            if (balance >= CASE_COST) {
-                balance -= CASE_COST;
-                updateBalanceDisplay();
-                runOpenAnimation();
-            } else {
-                tg.HapticFeedback.notificationOccurred('error'); // Вибрация ошибки
-                tg.showAlert("У вас недостаточно монет!");
-            }
-        }
+    // 1. Находим кнопку в памяти браузера по её ID
+    const btn = document.getElementById('mainBtn');
+
+    // 2. Проверяем баланс (значение balance мы задали выше)
+    if (balance >= 100) {
+        // 3. Сразу отключаем кнопку, чтобы пользователь не нажал её 10 раз подряд
+        btn.disabled = true; 
+        
+        // 4. Списываем валюту
+        balance -= 100;
+        updateBalanceDisplay(); // Обновляем цифру на экране
+
+        // 5. Запускаем анимацию открытия (тряску)
+        runOpenAnimation(); 
+    } else {
+        // Если денег нет, выводим сообщение через SDK Telegram
+        window.Telegram.WebApp.showAlert("Недостаточно монет!");
+    }
+}
+
 
         function runOpenAnimation() {
             const box = document.getElementById('caseBox');
