@@ -2,91 +2,149 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NFT Gift Store</title>
-    <!-- Подключаем главный скрипт Telegram -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Case Mini App</title>
+    <!-- Подключаем SDK Telegram -->
     <script src="https://telegram.org"></script>
     <style>
-        /* Используем системные цвета Telegram для "оживления" интерфейса */
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
-            margin: 0;
-            padding: 20px;
+            background-color: #0f0f0f;
+            color: white;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
         }
 
-        .card {
-            background-color: var(--tg-theme-secondary-bg-color, #f4f4f5);
+        .case-container {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, #2c3e50 0%, #000000 100%);
+            border: 2px solid #f39c12;
             border-radius: 20px;
-            padding: 20px;
-            width: 100%;
-            max-width: 300px;
-            text-align: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            border: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 20px rgba(243, 156, 18, 0.3);
+            transition: transform 0.3s;
         }
 
-        .nft-img {
-            width: 100%;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        .case-container.shake {
+            animation: shake 0.5s infinite;
         }
 
-        h2 { margin: 10px 0; font-size: 22px; }
-        p { color: var(--tg-theme-hint-color, #999); margin-bottom: 20px; }
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(5deg); }
+            50% { transform: rotate(0eg); }
+            75% { transform: rotate(-5deg); }
+            100% { transform: rotate(0deg); }
+        }
 
         .btn {
-            background-color: var(--tg-theme-button-color, #248bcf);
-            color: var(--tg-theme-button-text-color, #ffffff);
+            background: linear-gradient(135deg, #f39c12, #e67e22);
             border: none;
-            padding: 15px 30px;
-            border-radius: 12px;
+            padding: 15px 40px;
+            color: white;
+            font-size: 18px;
             font-weight: bold;
-            font-size: 16px;
+            border-radius: 12px;
             cursor: pointer;
-            width: 100%;
-            transition: transform 0.1s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
-        .btn:active { transform: scale(0.96); }
+        .btn:disabled { background: #555; opacity: 0.6; }
+
+        .reward-text {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #2ecc71;
+            min-height: 24px;
+        }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <!-- Реальная картинка подарка из базы Telegram/Fragment -->
-        <img src="https://nft.fragment.com" class="nft-img" alt="Plush Pepe">
-        
-        <h2>Plush Pepe</h2>
-        <p>Эксклюзивный NFT подарок</p>
-
-        <button class="btn" onclick="handleBuy()">Купить за 3330 TON</button>
-    </div>
+    <div class="case-container" id="case">📦</div>
+    <div id="reward" class="reward-text"></div>
+    <br>
+    <button class="btn" id="buyBtn" onclick="startProcess()">Открыть за 50 ⭐</button>
 
     <script>
-        // Инициализация Web App
         const tg = window.Telegram.WebApp;
-
-        // Сообщаем Telegram, что приложение готово и его можно показать (убирает заглушку-картинку)
-        tg.ready();
+        const BOT_TOKEN = '8424702398:AAEZcihXkIAq3ORxKbXiAls3XH6yl2t1QGM'; // ВСТАВЬТЕ СЮДА ТОКЕН
         
-        // Разворачиваем на весь экран
+        tg.ready();
         tg.expand();
 
-        // Настройка цвета статус-бара в тон приложению
-        tg.setHeaderColor(tg.themeParams.bg_color);
+        const caseEl = document.getElementById('case');
+        const rewardEl = document.getElementById('reward');
+        const buyBtn = document.getElementById('buyBtn');
 
-        function handleBuy() {
-            // Вибрация при нажатии (Haptic Feedback) - делает приложение "живым"
-            tg.HapticFeedback.notificationOccurred('success');
+        async function startProcess() {
+            rewardEl.innerText = "";
+            buyBtn.disabled = true;
+            
+            try {
+                // 1. Создаем счет на оплату через API Telegram
+                const invoiceData = {
+                    title: "Магический Кейс",
+                    description: "Получите случайный приз внутри!",
+                    payload: "user_id_" + tg.initDataUnsafe.user?.id,
+                    currency: "XTR", // Код для Telegram Stars
+                    prices: [{ label: "Кейс", amount: 50 }]
+                };
 
-            // Официальный метод для открытия ссылки
-            tg.openLink('https://fragment.com');
+                const response = await fetch(`https://api.telegram.org{BOT_TOKEN}/createInvoiceLink`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(invoiceData)
+                });
+
+                const result = await response.json();
+
+                if (result.ok) {
+                    // 2. Открываем нативное окно оплаты
+                    tg.openInvoice(result.result, (status) => {
+                        if (status === 'paid') {
+                            openCase();
+                        } else {
+                            tg.showAlert("Оплата отменена");
+                            buyBtn.disabled = false;
+                        }
+                    });
+                } else {
+                    tg.showAlert("Ошибка создания счета. Проверьте BOT_TOKEN");
+                    buyBtn.disabled = false;
+                }
+            } catch (e) {
+                tg.showAlert("Ошибка сети: " + e.message);
+                buyBtn.disabled = false;
+            }
+        }
+
+        function openCase() {
+            caseEl.classList.add('shake');
+            caseEl.innerText = "⏳";
+            
+            // Имитация "открытия" 2 секунды
+            setTimeout(() => {
+                caseEl.classList.remove('shake');
+                const items = ["💎 Алмаз", "💰 1000 Монет", "🔥 Супер-сила", "🃏 Редкая карта"];
+                const win = items[Math.floor(Math.random() * items.length)];
+                
+                caseEl.innerText = "🎁";
+                rewardEl.innerText = "Вам выпало: " + win;
+                buyBtn.disabled = false;
+                tg.HapticFeedback.notificationOccurred('success');
+            }, 2000);
         }
     </script>
 </body>
