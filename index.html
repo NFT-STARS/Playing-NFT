@@ -13,7 +13,7 @@
         #ui { padding-top: 40px; }
         #score { font-size: 50px; font-weight: 900; color: var(--main-color); margin: 0; }
         #profit { color: var(--accent-color); font-size: 18px; font-weight: bold; }
-        #game-area { height: 55vh; display: flex; justify-content: center; align-items: center; position: relative; }
+        #game-area { height: 50vh; display: flex; justify-content: center; align-items: center; position: relative; }
         #tooth {
             width: 200px; height: 220px; background: white; border: 8px solid var(--main-color);
             border-radius: 60px; position: relative; cursor: pointer;
@@ -24,7 +24,7 @@
         .eye { width: 18px; height: 18px; background: var(--main-color); border-radius: 50%; margin: 0 15px; }
         #mouth { width: 40px; height: 8px; border-radius: 10px; background: var(--main-color); transition: 0.1s; }
         #energy-container { 
-            width: 80%; margin: 20px auto; background: #dcdde1; 
+            width: 80%; margin: 15px auto; background: #dcdde1; 
             height: 25px; border-radius: 15px; overflow: hidden; position: relative; border: 2px solid var(--main-color);
         }
         #energy-bar { width: 100%; height: 100%; background: var(--accent-color); transition: width 0.3s; }
@@ -41,14 +41,37 @@
             pointer-events: none; animation: fly 0.7s ease-out forwards; z-index: 20;
         }
         @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
-        #shop-btn {
-            background: var(--main-color); color: white; border: none; padding: 15px 50px;
-            border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer;
+        
+        /* ВКЛАДКИ */
+        #top-screen { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: white; z-index: 100; overflow-y: auto; padding-top: 20px;
         }
+        .top-list { width: 90%; margin: 0 auto; text-align: left; border-collapse: collapse; }
+        .top-list tr { border-bottom: 1px solid #eee; }
+        .top-list td { padding: 10px; font-weight: bold; color: var(--main-color); }
+        .rank { width: 30px; color: var(--accent-color) !important; }
+        
+        .nav-bar { display: flex; justify-content: space-around; margin-top: 10px; }
+        .btn {
+            background: var(--main-color); color: white; border: none; padding: 12px 25px;
+            border-radius: 15px; font-size: 16px; font-weight: bold; cursor: pointer;
+        }
+        .close-btn { background: #e74c3c; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
+    <!-- Экран ТОП 100 -->
+    <div id="top-screen">
+        <h2>🏆 ТОП 100 ИГРОКОВ</h2>
+        <button class="btn close-btn" onclick="toggleTop(false)">ЗАКРЫТЬ</button>
+        <table class="top-list" id="leaderboard">
+            <!-- Сюда вставятся данные -->
+        </table>
+    </div>
+
+    <!-- Основной интерфейс -->
     <div id="ui">
         <div id="profit">Прибыль: +<span id="p-val">0</span>/сек</div>
         <p id="score">0</p>
@@ -66,10 +89,12 @@
         <div id="energy-info">⚡ <span id="e-num">50</span> / 50 | <span id="timer">05:00</span></div>
     </div>
 
-    <button id="shop-btn" onclick="buyUpgrade()">УЛУЧШИТЬ (+1/сек) — <span id="cost">50</span> 💰</button>
+    <div class="nav-bar">
+        <button class="btn" onclick="buyUpgrade()">УЛУЧШИТЬ — <span id="cost">50</span> 💰</button>
+        <button class="btn" style="background: #f1c40f; color: black;" onclick="toggleTop(true)">🏆 ТОП</button>
+    </div>
 
     <script>
-        // Инициализация данных
         let score = parseInt(localStorage.getItem('z_sc')) || 0;
         let profit = parseInt(localStorage.getItem('z_pr')) || 0;
         let cost = parseInt(localStorage.getItem('z_co')) || 50;
@@ -77,23 +102,16 @@
         if (isNaN(energy)) energy = 50;
 
         const maxEnergy = 50;
-        const restoreTime = 300; // 5 минут
-        
-        // Расчет восстановления за время отсутствия
+        const restoreTime = 300; 
         let lastSave = parseInt(localStorage.getItem('z_ls')) || Date.now();
         let secondsPassed = Math.floor((Date.now() - lastSave) / 1000);
         let energyGained = Math.floor(secondsPassed / restoreTime);
         energy = Math.min(maxEnergy, energy + energyGained);
 
-        // Текущий таймер
         let currentTimer = parseFloat(localStorage.getItem('z_tm')) || restoreTime;
-        // Уменьшаем таймер на остаток секунд после начисления целой энергии
         if (energy < maxEnergy) {
             currentTimer -= (secondsPassed % restoreTime);
-            if (currentTimer <= 0) {
-                energy = Math.min(maxEnergy, energy + 1);
-                currentTimer = restoreTime;
-            }
+            if (currentTimer <= 0) { energy = Math.min(maxEnergy, energy + 1); currentTimer = restoreTime; }
         }
 
         const scoreEl = document.getElementById('score');
@@ -110,20 +128,16 @@
             costEl.innerText = cost;
             energyNum.innerText = Math.floor(energy);
             energyEl.style.width = (energy / maxEnergy * 100) + '%';
-            
             if (energy < maxEnergy) {
                 let m = Math.floor(currentTimer / 60);
                 let s = Math.floor(currentTimer % 60);
                 timerEl.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-            } else {
-                timerEl.innerText = "FULL";
-            }
+            } else { timerEl.innerText = "FULL"; }
         }
 
         function tap(e) {
             if (energy >= 1) {
-                score += 1;
-                energy -= 1;
+                score += 1; energy -= 1;
                 tooth.classList.add('active');
                 setTimeout(() => tooth.classList.remove('active'), 100);
                 const x = e.touches ? e.touches[0].clientX : e.clientX;
@@ -144,22 +158,45 @@
 
         function buyUpgrade() {
             if (score >= cost) {
-                score -= cost;
-                profit += 1;
+                score -= cost; profit += 1;
                 cost = Math.floor(cost * 1.6);
-                updateUI();
-                save();
+                updateUI(); save();
             }
+        }
+
+        // ТОП 100 ЛОГИКА
+        function toggleTop(show) {
+            const screen = document.getElementById('top-screen');
+            screen.style.display = show ? 'block' : 'none';
+            if(show) renderTop();
+        }
+
+        function renderTop() {
+            const list = document.getElementById('leaderboard');
+            // Симуляция данных (в реальности тут был бы запрос к БД)
+            let players = [
+                {name: "Вы", score: Math.floor(score)},
+                {name: "Зубной Король", score: 150000},
+                {name: "TapMaster", score: 85000},
+                {name: "Стоматолог2026", score: 42000},
+                {name: "GigaDentist", score: 12000}
+            ];
+            players.sort((a, b) => b.score - a.score);
+            
+            list.innerHTML = players.map((p, i) => `
+                <tr>
+                    <td class="rank">#${i+1}</td>
+                    <td>${p.name}</td>
+                    <td style="text-align:right">${p.score.toLocaleString()} 💰</td>
+                </tr>
+            `).join('');
         }
 
         setInterval(() => {
             score += profit / 10; 
             if (energy < maxEnergy) {
                 currentTimer -= 0.1;
-                if (currentTimer <= 0) {
-                    energy += 1;
-                    currentTimer = restoreTime;
-                }
+                if (currentTimer <= 0) { energy += 1; currentTimer = restoreTime; }
             }
             updateUI();
         }, 100);
@@ -170,13 +207,12 @@
             localStorage.setItem('z_co', cost);
             localStorage.setItem('z_en', energy);
             localStorage.setItem('z_tm', currentTimer);
-            localStorage.setItem('z_ls', Date.now()); // Сохраняем время выхода
+            localStorage.setItem('z_ls', Date.now());
         }
         setInterval(save, 2000);
 
         tooth.addEventListener('touchstart', (e) => { e.preventDefault(); tap(e); });
         tooth.addEventListener('mousedown', (e) => tap(e));
-
         updateUI();
     </script>
 </body>
