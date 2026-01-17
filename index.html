@@ -3,150 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NFT STARS - Play & Earn</title>
+    <title>NFT STARS - Trading</title>
     <script src="https://telegram.org"></script>
     <style>
-        :root {
-            --bg: #0b0e11;
-            --card: #1e2329;
-            --accent: #fcd535; /* Золотой цвет звезд */
-            --text: #ffffff;
-            --secondary: #848e9c;
-        }
+        :root { --bg: #0b0e11; --accent: #fcd535; --card: #1e2329; }
+        body { font-family: sans-serif; background: var(--bg); color: white; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
+        .header { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+        .balance-box { background: var(--card); padding: 10px 20px; border-radius: 15px; border: 1px solid var(--accent); font-weight: bold; }
+        
+        .chest-container { margin: 40px 0; text-align: center; }
+        .chest { font-size: 80px; transition: 0.3s; cursor: pointer; }
+        .shake { animation: shake 0.5s infinite; }
+        @keyframes shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(5deg); } 75% { transform: rotate(-5deg); } }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center;
-        }
+        .btn-open { background: var(--accent); color: black; border: none; padding: 18px; border-radius: 15px; font-weight: bold; width: 100%; font-size: 16px; }
 
-        /* Header */
-        .header {
-            width: 100%; padding: 20px;
-            background: var(--card);
-            display: flex; align-items: center; justify-content: space-between;
-            box-sizing: border-box;
+        /* Окно выигрыша */
+        #modal {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            flex-direction: column; align-items: center; justify-content: center; z-index: 100; padding: 20px;
         }
+        .win-card { background: var(--card); padding: 30px; border-radius: 20px; text-align: center; width: 80%; border: 1px solid var(--accent); }
+        .win-icon { font-size: 60px; margin-bottom: 10px; }
+        .win-btns { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 20px; }
+        .btn-keep { background: #4cd137; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; }
+        .btn-sell { background: #e84118; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; }
 
-        .user-block { display: flex; align-items: center; gap: 10px; }
-        .avatar { width: 40px; height: 40px; border-radius: 12px; background: var(--accent); color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-
-        /* Balance Section */
-        .balance-section {
-            text-align: center; margin-top: 30px;
-        }
-        .balance-label { color: var(--secondary); font-size: 14px; letter-spacing: 1px; }
-        .balance-value { font-size: 48px; font-weight: 800; margin: 10px 0; color: var(--accent); }
-
-        /* Game Button */
-        .play-area {
-            width: 100%; padding: 20px; box-sizing: border-box;
-        }
-        .main-button {
-            width: 100%; height: 60px; background: var(--accent); color: #000;
-            border: none; border-radius: 16px; font-size: 18px; font-weight: bold;
-            cursor: pointer; transition: 0.2s;
-        }
-        .main-button:active { transform: scale(0.98); }
-
-        /* NFT Inventory */
-        .inventory {
-            width: 100%; padding: 0 20px; box-sizing: border-box;
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;
-        }
-        .nft-card {
-            background: var(--card); border-radius: 16px; padding: 15px;
-            text-align: center; border: 1px solid rgba(255,255,255,0.05);
-        }
-        .nft-icon { font-size: 40px; margin-bottom: 10px; }
-        .nft-name { font-size: 14px; font-weight: bold; }
-        .nft-price { font-size: 12px; color: var(--accent); margin-top: 5px; }
-
-        .title-app { font-size: 20px; font-weight: 800; margin-top: 20px; color: var(--accent); }
+        .inventory { width: 100%; margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .item { background: var(--card); padding: 8px; border-radius: 10px; text-align: center; font-size: 11px; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="user-block">
-            <div class="avatar" id="u-avatar">?</div>
-            <div id="u-name">Player</div>
+        <div id="u-name">Игрок</div>
+        <div class="balance-box">⭐ <span id="balance">500</span></div>
+    </div>
+
+    <div class="chest-container" onclick="openChest()">
+        <div class="chest" id="chest-emoji">🎁</div>
+        <p style="color: gray;">Нажми на сундук</p>
+    </div>
+
+    <button class="btn-open" onclick="openChest()">ОТКРЫТЬ (25 ⭐)</button>
+
+    <div id="modal">
+        <div class="win-card">
+            <div id="win-label" style="color: var(--accent); margin-bottom: 10px;">ВЫПАЛ ПОДАРOК!</div>
+            <div class="win-icon" id="win-icon">🎁</div>
+            <div id="win-name" style="font-weight: bold; font-size: 20px;">Название</div>
+            <div id="win-price" style="margin-top: 5px; opacity: 0.8;">Цена: 0 ⭐</div>
+            <div class="win-btns">
+                <button class="btn-keep" onclick="keepItem()">В КОЛЛЕКЦИЮ</button>
+                <button class="btn-sell" id="sell-text" onclick="sellItem()">ПРОДАТЬ ЗА 0 ⭐</button>
+            </div>
         </div>
-        <div style="font-size: 12px; border: 1px solid var(--accent); padding: 4px 8px; border-radius: 8px;">NFT STARS 2026</div>
     </div>
 
-    <div class="title-app">NFT STARS - Playing</div>
-
-    <div class="balance-section">
-        <div class="balance-label">БАЛАНС ЗВЕЗД</div>
-        <div class="balance-value">⭐ <span id="star-count">500</span></div>
-    </div>
-
-    <div class="play-area">
-        <button class="main-button" onclick="getStars()">ПОЛУЧИТЬ ⭐</button>
-    </div>
-
-    <div style="width: 100%; padding-left: 40px; font-weight: bold;">МОИ NFT ПРЕДМЕТЫ</div>
-    
-    <div class="inventory" id="nft-grid">
-        <!-- NFT появятся здесь -->
-    </div>
+    <div style="margin-top: 30px; font-weight: bold; width: 100%;">ИНВЕНТАРЬ:</div>
+    <div class="inventory" id="inventory"></div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+        tg.ready(); tg.expand();
 
-        let stars = parseInt(localStorage.getItem('stars_2026')) || 500;
-        let inventory = JSON.parse(localStorage.getItem('inventory_2026')) || [];
+        let balance = parseFloat(localStorage.getItem('stars_26')) || 500;
+        let inventory = JSON.parse(localStorage.getItem('inv_26')) || [];
+        let lastReward = null;
 
-        function updateData() {
-            document.getElementById('star-count').innerText = stars;
-            const grid = document.getElementById('nft-grid');
-            
-            if (inventory.length === 0) {
-                grid.innerHTML = '<div style="grid-column: span 2; color: #848e9c; padding: 20px;">Нет NFT. Нажмите кнопку выше!</div>';
-            } else {
-                grid.innerHTML = inventory.map(item => `
-                    <div class="nft-card">
-                        <div class="nft-icon">${item.icon}</div>
-                        <div class="nft-name">${item.name}</div>
-                        <div class="nft-price">#${item.id}</div>
-                    </div>
-                `).join('');
+        function updateUI() {
+            document.getElementById('balance').innerText = balance.toFixed(1);
+            document.getElementById('inventory').innerHTML = inventory.map(i => `<div class="item"><div>${i.icon}</div>${i.val} ⭐</div>`).join('');
+            if (tg.initDataUnsafe?.user) document.getElementById('u-name').innerText = tg.initDataUnsafe.user.first_name;
+        }
+
+        function openChest() {
+            if (balance < 25) return tg.showAlert("Мало звезд!");
+            balance -= 25;
+            updateUI();
+
+            const chest = document.getElementById('chest-emoji');
+            chest.classList.add('shake');
+            tg.HapticFeedback.impactOccurred('heavy');
+
+            setTimeout(() => {
+                chest.classList.remove('shake');
+                calculateReward();
+            }, 1200);
+        }
+
+        function calculateReward() {
+            const rand = Math.random() * 100;
+            let reward = { val: 0, icon: '⭐', name: 'Звезды' };
+
+            if (rand <= 0.5) { // Джекпот 0.5%
+                reward.val = Math.floor(Math.random() * 2200) + 300;
+                reward.icon = '🏆'; reward.name = 'Super NFT';
+            } else if (rand <= 15) { // Редкие
+                const rare = [25, 50, 100, 250];
+                reward.val = rare[Math.floor(Math.random() * rare.length)];
+                reward.icon = '💎'; reward.name = 'Rare Star';
+            } else { // Обычные
+                const common = [1, 5, 10, 20];
+                reward.val = common[Math.floor(Math.random() * common.length)];
+                reward.icon = '⭐'; reward.name = 'Small Stars';
             }
-            localStorage.setItem('stars_2026', stars);
-            localStorage.setItem('inventory_2026', JSON.stringify(inventory));
-        }
 
-        function getStars() {
-            tg.HapticFeedback.impactOccurred('medium');
-            
-            // Логика: либо даем звезды, либо выпадает NFT за звезды
-            if (Math.random() > 0.7) {
-                const nfts = [
-                    {name: 'Gold Star', icon: '🌟', id: Math.floor(Math.random()*999)},
-                    {name: 'Cyber Punk', icon: '🤖', id: Math.floor(Math.random()*999)},
-                    {name: 'Cosmos NFT', icon: '🚀', id: Math.floor(Math.random()*999)}
-                ];
-                const win = nfts[Math.floor(Math.random()*nfts.length)];
-                inventory.push(win);
-                tg.showAlert(`УРА! Вы получили редкий NFT: ${win.name}`);
+            lastReward = reward;
+
+            if (reward.val >= 25) {
+                // Если редкий — открываем окно выбора
+                showModal(reward);
             } else {
-                stars += 10;
+                // Если дешевый — просто добавляем к балансу
+                balance += reward.val;
+                tg.showAlert(`Выпало: ${reward.val} ⭐`);
+                updateUI();
             }
-            updateData();
         }
 
-        // Загрузка данных пользователя
-        if (tg.initDataUnsafe?.user) {
-            document.getElementById('u-name').innerText = tg.initDataUnsafe.user.first_name;
-            document.getElementById('u-avatar').innerText = tg.initDataUnsafe.user.first_name.charAt(0);
+        function showModal(item) {
+            document.getElementById('win-icon').innerText = item.icon;
+            document.getElementById('win-name').innerText = item.name;
+            document.getElementById('win-price').innerText = `Стоимость: ${item.val} ⭐`;
+            document.getElementById('sell-text').innerText = `ПРОДАТЬ ЗА ${item.val} ⭐`;
+            document.getElementById('modal').style.display = 'flex';
+            tg.HapticFeedback.notificationOccurred('success');
         }
 
-        updateData();
+        function keepItem() {
+            inventory.unshift(lastReward);
+            localStorage.setItem('inv_26', JSON.stringify(inventory));
+            closeModal();
+        }
+
+        function sellItem() {
+            balance += lastReward.val;
+            localStorage.setItem('stars_26', balance);
+            closeModal();
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+            updateUI();
+        }
+
+        updateUI();
     </script>
 </body>
 </html>
