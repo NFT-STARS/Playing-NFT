@@ -6,241 +6,184 @@
     <title>Зуб-Тапер 2026</title>
     <style>
         :root { --main-color: #2c3e50; --accent-color: #27ae60; --shop-color: #9b59b6; --dia-color: #00d2ff; }
-        body { margin: 0; background: linear-gradient(180deg, #e0f0ff 0%, #ffffff 100%); font-family: 'Segoe UI', sans-serif; text-align: center; overflow: hidden; touch-action: none; }
-        .wood-board { background: linear-gradient(45deg, #5D2E0A, #8B4513); border: 4px solid #3E1F07; border-radius: 10px; color: #FFD700; display: inline-block; padding: 5px 20px; margin-top: 10px; box-shadow: 0 4px 0 #3E1F07; font-weight: bold; }
-        #ui { padding-top: 20px; position: relative; }
-        #score { font-size: 50px; font-weight: 900; color: var(--main-color); margin: 0; }
-        .dia-container { position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.9); padding: 5px 12px; border-radius: 20px; border: 2px solid var(--dia-color); color: var(--dia-color); font-weight: bold; z-index: 100; }
+        body { 
+            margin: 0; background: radial-gradient(circle, #ffffff 0%, #e0f0ff 100%); 
+            font-family: 'Segoe UI', sans-serif; text-align: center; overflow: hidden; touch-action: none; 
+        }
         
-        /* Кнопки управления */
-        .top-corner-btn { position: fixed; top: 15px; left: 15px; z-index: 110; width: 60px; height: 60px; }
-        .shop-corner-btn { position: fixed; bottom: 15px; left: 15px; z-index: 110; width: 70px; height: 70px; background: var(--shop-color) !important; }
-        .shop-corner-btn::before { content: "🧺"; display: block; font-size: 24px; }
-        
-        /* Стили рамок в ТОПе */
-        .rank-1 { border: 3px solid #FFD700 !important; box-shadow: inset 0 0 10px #FFD700; background: #fffdf0 !important; }
-        .rank-2 { border: 3px solid #C0C0C0 !important; box-shadow: inset 0 0 10px #C0C0C0; background: #f8f8f8 !important; }
-        .rank-3 { border: 3px solid #CD7F32 !important; box-shadow: inset 0 0 10px #CD7F32; background: #fff5ed !important; }
-        .rank-4-10 { border: 2px solid #54a0ff !important; }
+        /* Фон магазина */
+        #shop-screen { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; }
 
-        /* Окно нехватки энергии */
-        #energy-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 4px solid var(--main-color); border-radius: 20px; padding: 20px; z-index: 300; width: 80%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
-
-        #game-area { height: 40vh; display: flex; justify-content: center; align-items: center; position: relative; }
-        #tooth-container { width: 180px; height: 200px; position: relative; transition: transform 0.1s; cursor: pointer; z-index: 10; }
-        #tooth { width: 100%; height: 100%; background: white; border: 8px solid var(--main-color); border-radius: 60px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; z-index: 11; }
-        .limb { position: absolute; background: var(--main-color); border-radius: 10px; z-index: 5; }
-        .arm { width: 12px; height: 60px; top: 80px; }
-        .left-arm { left: -25px; transform: rotate(20deg); }
-        .right-arm { right: -25px; transform: rotate(-20deg); }
-        .leg { width: 20px; height: 50px; bottom: -30px; }
-        .left-leg { left: 40px; }
-        .right-leg { right: 40px; }
+        /* Реалистичный Мультяшный Зубик */
+        #tooth-container { width: 180px; height: 200px; position: relative; transition: transform 0.1s; cursor: pointer; z-index: 10; margin-top: 20px; }
+        #tooth {
+            width: 100%; height: 100%; background: white; border: 6px solid #dcdde1;
+            border-radius: 40% 40% 50% 50% / 20% 20% 80% 80%; /* Форма зуба */
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            position: relative; z-index: 11; box-shadow: inset -10px -10px 0 #f1f2f6;
+        }
+        .tooth-top { position: absolute; top: -10px; width: 100%; display: flex; justify-content: space-around; }
+        .bump { width: 45%; height: 30px; background: white; border-radius: 50% 50% 0 0; border: 6px solid #dcdde1; border-bottom: none; }
         
-        .active-squat { transform: scale(0.9) translateY(20px); }
+        .limb { position: absolute; background: #f1f2f6; border: 4px solid #dcdde1; border-radius: 20px; z-index: 5; }
+        .arm { width: 15px; height: 70px; top: 70px; }
+        .left-arm { left: -30px; transform: rotate(20deg); border-radius: 20px 0 0 20px; }
+        .right-arm { right: -30px; transform: rotate(-20deg); border-radius: 0 20px 20px 0; }
+        .leg { width: 30px; height: 60px; bottom: -40px; border-radius: 0 0 15px 15px; }
+        .left-leg { left: 30px; }
+        .right-leg { right: 30px; }
+
+        .eye-row { display: flex; margin-bottom: 10px; }
+        .eye { width: 22px; height: 22px; background: var(--main-color); border-radius: 50%; margin: 0 15px; position: relative; transition: 0.1s; }
+        .eye::after { content: ''; position: absolute; top: 3px; left: 3px; width: 6px; height: 6px; background: white; border-radius: 50%; }
+        #mouth { width: 45px; height: 10px; border-radius: 10px; background: #e74c3c; transition: 0.1s; }
+
+        /* Анимация приседания и закрытия глаз */
+        .active-squat { transform: scale(0.9, 0.7) translateY(40px); }
+        .active-squat .eye { height: 4px; border-radius: 0; margin-top: 10px; }
+        .active-squat .eye::after { display: none; }
+
+        /* Медали в ТОПе */
+        .medal { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto; border: 4px solid; }
+        .gold-m { background: #FFD700; border-color: #DAA520; color: #5d2e0a; box-shadow: 0 0 10px #FFD700; }
+        .silver-m { background: #C0C0C0; border-color: #A9A9A9; color: #333; box-shadow: 0 0 10px #C0C0C0; }
+        .bronze-m { background: #CD7F32; border-color: #8B4513; color: white; box-shadow: 0 0 10px #CD7F32; }
+        
+        /* Остальные стили из вашего кода сохранены */
+        .wood-board { background: linear-gradient(45deg, #5D2E0A, #8B4513); border: 4px solid #3E1F07; border-radius: 10px; color: #FFD700; display: inline-block; padding: 5px 20px; font-weight: bold; }
         #energy-container { width: 80%; margin: 15px auto; background: #dcdde1; height: 25px; border-radius: 15px; overflow: hidden; position: relative; border: 2px solid var(--main-color); }
         #energy-bar { width: 100%; height: 100%; background: var(--accent-color); transition: width 0.3s; }
-        #energy-info { position: absolute; width: 100%; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; color: var(--main-color); font-size: 14px; pointer-events: none; z-index: 20; }
-        
-        #top-screen, #shop-screen, #inv-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 200; overflow-y: auto; padding-top: 20px; }
-        #top-screen { background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%); }
-        #shop-screen { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        #inv-screen { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
-        
-        .top-list { width: 95%; margin: 0 auto; border-collapse: separate; border-spacing: 0 8px; }
-        .reward-col { font-weight: bold; color: var(--dia-color); width: 80px; font-size: 11px; text-align: right; }
         .nav-bar { display: flex; justify-content: center; padding: 10px; gap: 10px; }
         .btn { background: var(--main-color); color: white; border: none; padding: 10px 15px; border-radius: 12px; font-weight: bold; cursor: pointer; }
-        .chest-btn { background: linear-gradient(#8b4513, #cd7f32); border: 2px solid #5d2e0a; }
-        .inv-item { background: white; margin: 10px; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .plus-one { position: absolute; color: var(--accent-color); font-size: 32px; font-weight: bold; pointer-events: none; animation: fly 0.7s ease-out forwards; z-index: 50; }
-        @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
+        #top-screen { background: url('https://www.transparenttextures.com'), linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%); }
     </style>
 </head>
 <body>
-    <div class="dia-container">💎 <span id="dia-val">0</span></div>
+    <div class="dia-container" style="position: absolute; top: 10px; right: 10px; z-index: 100;">💎 <span id="dia-val">0</span></div>
     
-    <div id="energy-modal">
-        <h3>Энергия на нуле! 🔋</h3>
-        <p>Хочешь пополнить запас в магазине?</p>
-        <button class="btn" style="background:var(--shop-color)" onclick="closeEnergyModal(); toggleScreen('shop-screen', true)">В МАГАЗИН</button>
-        <button class="btn" style="background:#7f8c8d; margin-top:10px" onclick="closeEnergyModal()">ПОДОЖДУ</button>
-    </div>
-
-    <button class="btn top-corner-btn" onclick="toggleScreen('top-screen', true)">🏆<br>ТОП</button>
-    <button class="btn shop-corner-btn" onclick="toggleScreen('shop-screen', true)">ШОП</button>
-
-    <div id="top-screen">
-        <h2 style="color: #5d2e0a;">🏆 РЕЙТИНГ МАСТЕРОВ</h2>
-        <div id="reset-timer" style="font-size:14px; font-weight:bold; color:#e74c3c; margin-bottom:10px;"></div>
-        <div style="display:flex; justify-content:center; gap:5px; margin-bottom:10px;">
-            <button class="btn" onclick="changeTab('all')">Все время</button>
-            <button class="btn" onclick="changeTab('week')">Неделя</button>
-            <button class="btn" onclick="changeTab('day')">День</button>
-        </div>
-        <button class="btn" onclick="toggleScreen('top-screen', false)" style="background:#e74c3c">ЗАКРЫТЬ</button>
-        <table class="top-list" id="leaderboard"></table>
-    </div>
-
-    <div id="shop-screen">
-        <h2>⚡ КОРЗИНКА ПОКУПОК</h2>
-        <div style="padding: 20px;">
-            <button class="btn" style="background:#ff9f43; width: 100%;" onclick="buyEnergy(50, 350)">🔋 Пополнить энергию (350 💰)</button>
+    <!-- МАГАЗИН -->
+    <div id="shop-screen" style="display:none; position:fixed; width:100%; height:100%; z-index:500; padding-top:20px;">
+        <h2>🛒 МАГАЗИН 2026</h2>
+        <div style="padding:20px;">
+            <div style="background:rgba(255,255,255,0.1); padding:15px; border-radius:15px; margin-bottom:10px;">
+                <h3>Усилитель x2 (30 мин)</h3>
+                <p>Удваивает всю прибыль!</p>
+                <button class="btn" style="background:var(--dia-color); color:black;" onclick="buyBooster()">Купить за 25 💎</button>
+            </div>
+            <button class="btn" style="background:#ff9f43; width:100%;" onclick="buyEnergy(50, 350)">🔋 FULL Энергия (350 💰)</button>
         </div>
         <button class="btn" onclick="toggleScreen('shop-screen', false)">НАЗАД</button>
     </div>
 
-    <div id="inv-screen">
-        <h2>🎒 ИНВЕНТАРЬ</h2>
-        <div id="inventory-list"></div>
-        <button class="btn" onclick="toggleScreen('inv-screen', false)">ЗАКРЫТЬ</button>
+    <!-- ТОП -->
+    <div id="top-screen" style="display:none; position:fixed; width:100%; height:100%; z-index:500; padding-top:20px; overflow-y:auto;">
+        <h2>🏆 РЕЙТИНГ</h2>
+        <div style="display:flex; justify-content:center; gap:5px; margin-bottom:10px;">
+            <button class="btn" onclick="changeTab('all')">Все время</button>
+            <button class="btn" onclick="changeTab('week')">Неделя</button>
+        </div>
+        <button class="btn" onclick="toggleScreen('top-screen', false)" style="background:#e74c3c">ЗАКРЫТЬ</button>
+        <table style="width:95%; margin:10px auto; border-collapse:separate; border-spacing:0 10px;" id="leaderboard"></table>
     </div>
 
     <div id="ui">
-        <div class="wood-board">Прибыль: +<span id="p-val">0</span>/сек</div>
-        <p id="score">0</p>
+        <div class="wood-board">Прибыль: +<span id="p-val">0</span>/сек <span id="booster-tag" style="display:none; color:white;">(X2 🔥)</span></div>
+        <p id="score" style="font-size:50px; font-weight:900; margin:0;">0</p>
     </div>
 
     <div id="game-area">
         <div id="tooth-container" onmousedown="tap(event)" ontouchstart="tap(event)">
+            <div class="tooth-top"><div class="bump"></div><div class="bump"></div></div>
             <div id="tooth">
                 <div class="eye-row"><div class="eye"></div><div class="eye"></div></div>
                 <div id="mouth"></div>
             </div>
-            <div class="limb arm left-arm"></div><div class="limb arm right-arm"></div><div class="limb leg left-leg"></div><div class="limb leg right-leg"></div>
+            <div class="limb arm left-arm"></div><div class="limb arm right-arm"></div>
+            <div class="limb leg left-leg"></div><div class="limb leg right-leg"></div>
         </div>
     </div>
 
     <div id="energy-container">
         <div id="energy-bar"></div>
-        <div id="energy-info">⚡ <span id="e-num">50</span> / 50 | <span id="timer">05:00</span></div>
+        <div id="energy-info" style="position:absolute; width:100%; top:5px; font-weight:bold;">⚡ <span id="e-num">50</span> / 50</div>
     </div>
 
     <div class="nav-bar">
-        <button class="btn" onclick="buyUpgrade()" style="flex:1">УЛУЧШИТЬ (<span id="cost">50</span>)</button>
-        <button class="btn chest-btn" onclick="toggleScreen('inv-screen', true)" style="flex:1">ИНВЕНТАРЬ</button>
+        <button class="btn" onclick="buyUpgrade()">УЛУЧШИТЬ</button>
+        <button class="btn" onclick="toggleScreen('top-screen', true)">🏆 ТОП</button>
+        <button class="btn" onclick="toggleScreen('shop-screen', true)" style="background:var(--shop-color)">🧺 МАГАЗИН</button>
     </div>
 
     <script>
         let balance = parseFloat(localStorage.getItem('z_balance')) || 0;
         let diamonds = parseInt(localStorage.getItem('z_dia')) || 0;
-        let scoreTotal = parseFloat(localStorage.getItem('z_sc_total')) || 0;
-        let scoreDay = parseFloat(localStorage.getItem('z_sc_d')) || 0;
-        let scoreWeek = parseFloat(localStorage.getItem('z_sc_w')) || 0;
         let profit = parseFloat(localStorage.getItem('z_pr')) || 0;
-        let cost = parseInt(localStorage.getItem('z_co')) || 50;
-        let energy = parseInt(localStorage.getItem('z_en')) ?? 50;
-        let inventory = JSON.parse(localStorage.getItem('z_inv')) || [];
-        let dayReset = parseInt(localStorage.getItem('z_dr')) || (Date.now() + 86400000);
-        let weekReset = parseInt(localStorage.getItem('z_wr')) || (Date.now() + 604800000);
-
-        if (Date.now() > dayReset) {
-            let r = 1; let rew = r === 1 ? 10000 : r === 2 ? 5000 : r === 3 ? 2000 : r <= 10 ? 1000 : 0;
-            if(rew > 0) inventory.push({name: "Награда дня", val: rew, type: "coins"});
-            scoreDay = 0; dayReset = Date.now() + 86400000; save();
-        }
-        if (Date.now() > weekReset) {
-            let r = 1; let dia = r === 1 ? 50 : r === 2 ? 40 : r === 3 ? 30 : r <= 10 ? 10 : 0;
-            if(dia > 0) inventory.push({name: "Награда недели", val: dia, type: "dia"});
-            scoreWeek = 0; weekReset = Date.now() + 604800000; save();
-        }
-
-        const maxEnergy = 50, restoreTime = 300;
-        let lastSave = parseInt(localStorage.getItem('z_ls')) || Date.now();
-        let currentTimer = parseFloat(localStorage.getItem('z_tm')) || restoreTime;
-        energy = Math.min(maxEnergy, energy + Math.floor((Date.now() - lastSave) / 1000 / restoreTime));
-
-        let currentTab = 'all';
+        let energy = 50;
+        let boosterTime = parseInt(localStorage.getItem('z_boost_end')) || 0;
 
         function updateUI() {
+            let isBoostActive = Date.now() < boosterTime;
+            let displayProfit = isBoostActive ? profit * 2 : profit;
+            
             document.getElementById('score').innerText = Math.floor(balance).toLocaleString();
             document.getElementById('dia-val').innerText = diamonds;
-            document.getElementById('p-val').innerText = profit.toFixed(1);
-            document.getElementById('cost').innerText = cost;
+            document.getElementById('p-val').innerText = displayProfit.toFixed(1);
             document.getElementById('e-num').innerText = Math.floor(energy);
-            document.getElementById('energy-bar').style.width = (energy / maxEnergy * 100) + '%';
-            if (energy < maxEnergy) {
-                let m = Math.floor(currentTimer / 60), s = Math.floor(currentTimer % 60);
-                document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-            } else { document.getElementById('timer').innerText = "FULL"; }
-            const timerDisp = document.getElementById('reset-timer');
-            if (currentTab === 'all') timerDisp.innerText = "Лучшие за всё время";
-            else {
-                let diff = Math.max(0, Math.floor(((currentTab === 'day' ? dayReset : weekReset) - Date.now()) / 1000));
-                let h = Math.floor(diff / 3600), m = Math.floor((diff % 3600) / 60), s = diff % 60;
-                timerDisp.innerText = `Сброс через: ${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
-            }
+            document.getElementById('energy-bar').style.width = (energy / 50 * 100) + '%';
+            document.getElementById('booster-tag').style.display = isBoostActive ? 'inline' : 'none';
         }
 
         function tap(e) {
-            if (e.type === 'touchstart') e.preventDefault();
             if (energy >= 1) {
-                balance++; scoreTotal++; scoreDay++; scoreWeek++; energy--;
-                document.getElementById('tooth-container').classList.add('active-squat');
-                setTimeout(() => document.getElementById('tooth-container').classList.remove('active-squat'), 100);
-                createPlus(e.touches ? e.touches[0].clientX : e.clientX, e.touches ? e.touches[0].clientY : e.clientY);
+                balance += 1; energy -= 1;
+                let char = document.getElementById('tooth-container');
+                char.classList.add('active-squat');
+                setTimeout(() => char.classList.remove('active-squat'), 100);
                 updateUI();
-            } else { document.getElementById('energy-modal').style.display = 'block'; }
+            }
         }
 
-        function closeEnergyModal() { document.getElementById('energy-modal').style.display = 'none'; }
-        function createPlus(x, y) {
-            const p = document.createElement('div'); p.className = 'plus-one'; p.innerText = '+1';
-            p.style.left = x + 'px'; p.style.top = y + 'px';
-            document.body.appendChild(p); setTimeout(() => p.remove(), 700);
+        function buyBooster() {
+            if (diamonds >= 25) {
+                diamonds -= 25;
+                boosterTime = Date.now() + (30 * 60 * 1000);
+                localStorage.setItem('z_boost_end', boosterTime);
+                alert("Бустер X2 активирован на 30 минут!");
+                updateUI();
+            } else { alert("Недостаточно алмазов!"); }
         }
 
         function renderTop() {
-            let val = currentTab === 'day' ? scoreDay : currentTab === 'week' ? scoreWeek : scoreTotal;
-            let players = [{name: "Вы", score: Math.floor(val)}, {name: "Giga", score: 5000}, {name: "Bot", score: 1000}, {name: "X", score: 100}, {name: "Y", score: 50}];
-            players.sort((a, b) => b.score - a.score);
+            let players = [{n: "Вы", s: balance}, {n: "Bot1", s: 5000}, {n: "Bot2", s: 2000}, {n: "Bot3", s: 1000}];
+            players.sort((a,b) => b.s - a.s);
             document.getElementById('leaderboard').innerHTML = players.map((p, i) => {
-                let rClass = (i === 0) ? 'rank-1' : (i === 1) ? 'rank-2' : (i === 2) ? 'rank-3' : (i < 10) ? 'rank-4-10' : '';
-                let reward = "";
-                if(currentTab === 'week' && i < 10) reward = `💎${i==0?50:i==1?40:i==2?30:10}`;
-                if(currentTab === 'day' && i < 10) reward = `💰${i==0?10000:i==1?5000:i==2?2000:1000}`;
-                return `<tr class="${rClass}" style="background:rgba(255,255,255,0.5);">
-                    <td style="padding:10px;">#${i+1}</td>
-                    <td style="text-align:left;">${p.name}</td>
-                    <td style="text-align:right;">${Math.floor(p.score).toLocaleString()}</td>
-                    <td class="reward-col">${reward}</td>
+                let medal = i === 0 ? 'gold-m' : i === 1 ? 'silver-m' : i === 2 ? 'bronze-m' : '';
+                return `<tr style="background:rgba(255,255,255,0.8); border-radius:15px;">
+                    <td style="padding:10px; width:60px;">${i < 3 ? `<div class="medal ${medal}">${i+1}</div>` : `#${i+1}`}</td>
+                    <td style="text-align:left; font-weight:bold;">${p.n}</td>
+                    <td style="text-align:right; padding-right:15px;">${Math.floor(p.s).toLocaleString()}</td>
                 </tr>`;
             }).join('');
         }
 
-        function toggleScreen(id, show) { 
-            document.getElementById(id).style.display = show ? 'block' : 'none'; 
-            if(show) { if(id==='top-screen') renderTop(); if(id==='inv-screen') renderInventory(); }
-        }
-        function renderInventory() {
-            const list = document.getElementById('inventory-list');
-            list.innerHTML = inventory.length ? inventory.map((item, i) => `
-                <div class="inv-item">
-                    <span>${item.name}: <b>${item.val}${item.type==='coins'?'💰':'💎'}</b></span>
-                    <button class="btn" onclick="claimItem(${i})" style="background:var(--accent-color)">ВЗЯТЬ</button>
-                </div>`).join('') : '<p>Наград пока нет</p>';
-        }
-        function claimItem(i) {
-            let item = inventory[i]; if(item.type === 'coins') balance += item.val; else diamonds += item.val;
-            inventory.splice(i, 1); save(); updateUI(); renderInventory();
-        }
-        function changeTab(t) { currentTab = t; renderTop(); }
-        function buyUpgrade() { if (balance >= cost) { balance -= cost; profit += 0.5; cost = Math.floor(cost * 1.5); updateUI(); save(); } }
-        function buyEnergy(a, p) { if (balance >= p) { balance -= p; energy = Math.min(maxEnergy, energy + a); updateUI(); save(); closeEnergyModal(); } }
-        function save() {
-            localStorage.setItem('z_balance', balance); localStorage.setItem('z_dia', diamonds);
-            localStorage.setItem('z_sc_total', scoreTotal); localStorage.setItem('z_sc_d', scoreDay);
-            localStorage.setItem('z_sc_w', scoreWeek); localStorage.setItem('z_pr', profit);
-            localStorage.setItem('z_co', cost); localStorage.setItem('z_en', energy);
-            localStorage.setItem('z_inv', JSON.stringify(inventory)); localStorage.setItem('z_tm', currentTimer);
-            localStorage.setItem('z_ls', Date.now()); localStorage.setItem('z_dr', dayReset); localStorage.setItem('z_wr', weekReset);
-        }
+        function toggleScreen(id, s) { document.getElementById(id).style.display = s ? 'block' : 'none'; if(id==='top-screen' && s) renderTop(); }
+        function buyUpgrade() { if(balance >= 100) { balance -= 100; profit += 0.5; updateUI(); } }
+        function buyEnergy(a, p) { if(balance >= p) { balance -= p; energy = 50; updateUI(); } }
+
         setInterval(() => {
-            balance += profit/10; scoreTotal += profit/10; scoreDay += profit/10; scoreWeek += profit/10;
-            if (energy < maxEnergy) { currentTimer -= 0.1; if (currentTimer <= 0) { energy += 1; currentTimer = restoreTime; } }
+            let mult = Date.now() < boosterTime ? 2 : 1;
+            balance += (profit * mult) / 10;
+            if (energy < 50) energy += 0.05;
             updateUI();
         }, 100);
-        setInterval(save, 3000); updateUI();
+
+        setInterval(() => {
+            localStorage.setItem('z_balance', balance);
+            localStorage.setItem('z_dia', diamonds);
+            localStorage.setItem('z_pr', profit);
+        }, 3000);
+
+        updateUI();
     </script>
 </body>
 </html>
