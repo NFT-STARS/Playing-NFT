@@ -1,127 +1,27 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NFT Gift Shop</title>
-    <script src="https://telegram.org"></script>
-    <style>
-        :root {
-            --bg: var(--tg-theme-bg-color, #ffffff);
-            --text: var(--tg-theme-text-color, #000000);
-            --hint: var(--tg-theme-hint-color, #999999);
-            --button: var(--tg-theme-button-color, #0088cc);
-        }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-               background: var(--bg); color: var(--text); margin: 0; padding: 10px; }
-        
-        .header { text-align: center; padding: 10px 0; font-size: 20px; font-weight: bold; }
-        
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px; }
-        
-        .card { 
-            background: var(--tg-theme-secondary-bg-color, #f4f4f5); 
-            border-radius: 16px; 
-            padding: 12px; 
-            display: flex; 
-            flex-direction: column;
-            border: 1px solid rgba(0,0,0,0.05);
-            transition: transform 0.2s;
-        }
-        .card:active { transform: scale(0.98); }
-
-        .nft-img { 
-            width: 100%; 
-            aspect-ratio: 1/1; 
-            border-radius: 12px; 
-            object-fit: cover; 
-            margin-bottom: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        .title { font-size: 14px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .price { color: #0088cc; font-size: 13px; font-weight: bold; margin-bottom: 12px; }
-        
-        .btn { 
-            background: var(--button); 
-            color: white; 
-            border: none; 
-            padding: 10px; 
-            border-radius: 10px; 
-            font-size: 12px; 
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .secondary-btn {
-            background: transparent;
-            color: var(--button);
-            margin-top: 5px;
-            font-size: 11px;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">NFT Подарки 2026</div>
-    <div class="grid" id="container"></div>
-
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
-
-        // Данные о подарках (актуальные коллекции на базе TON)
-        const nftGifts = [
-            {
-                name: "Web3 Duck #001",
-                price: "15.5 TON",
-                image: "https://cache.getgems.io",
-                url: "https://getgems.io..." 
-            },
-            {
-                name: "Telegram Star",
-                price: "890 STARS",
-                image: "https://fragment.com", // Пример пути Fragment
-                url: "https://fragment.com"
-            },
-            {
-                name: "TON Diamond #524",
-                price: "120 TON",
-                image: "https://ton.diamonds",
-                url: "https://ton.diamonds"
-            },
-            {
-                name: "Anonymous Number",
-                price: "450 TON",
-                image: "https://fragment.com",
-                url: "https://fragment.com"
-            }
-        ];
-
-        const container = document.getElementById('container');
-
-        nftGifts.forEach(item => {
-            const el = document.createElement('div');
-            el.className = 'card';
-            el.innerHTML = `
-                <img src="${item.image}" class="nft-img" onclick="openLink('${item.url}')">
-                <div class="title">${item.name}</div>
-                <div class="price">${item.price}</div>
-                <button class="btn" onclick="selectGift('${item.name}')">Купить</button>
-                <button class="secondary-btn" onclick="openLink('${item.url}')">Подробнее</button>
-            `;
-            container.appendChild(el);
-        });
-
-        function openLink(url) {
-            tg.openLink(url);
-        }
-
-        function selectGift(name) {
-            // Отправляем данные в бот
-            tg.sendData("order_" + name);
-            // Визуальный отклик
-            tg.HapticFeedback.notificationOccurred('success');
-        }
-    </script>
-</body>
-</html>
+const nftGifts = [
+    {
+        name: "Plush Pepe",
+        price: "3 330 TON",
+        // Прямая ссылка на изображение из кэша Fragment
+        image: "https://nft.fragment.com", 
+        url: "https://fragment.com" // Ссылка на коллекцию
+    },
+    {
+        name: "Toy Bear",
+        price: "150 TON",
+        image: "https://nft.fragment.com",
+        url: "https://fragment.com"
+    },
+    {
+        name: "Heroic Helmet",
+        price: "200 TON",
+        image: "https://nft.fragment.com",
+        url: "https://fragment.com"
+    },
+    {
+        name: "Precious Peach",
+        price: "80 TON",
+        image: "https://nft.fragment.com",
+        url: "https://fragment.com"
+    }
+];
