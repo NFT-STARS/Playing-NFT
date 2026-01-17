@@ -2,125 +2,122 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zub Atlet 2026</title>
-    <script src="https://telegram.org"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Strong Tooth Game</title>
     <style>
-        body {
-            margin: 0; padding: 0; background: #e0eafc;
-            font-family: sans-serif; height: 100vh;
-            display: flex; flex-direction: column; align-items: center;
-            overflow: hidden; touch-action: none;
+        /* --- СТИЛИ (ОФОРМЛЕНИЕ) --- */
+        body { 
+            margin: 0; padding: 0; background: #e0f0ff; 
+            font-family: sans-serif; text-align: center; 
+            overflow: hidden; touch-action: none; 
+        }
+        #score-container { margin-top: 50px; }
+        #score { font-size: 60px; font-weight: bold; color: #2c3e50; }
+        
+        #game-area {
+            height: 60vh; display: flex; justify-content: center; align-items: center;
         }
 
-        .score-box { margin-top: 50px; text-align: center; }
-        .score-num { font-size: 60px; font-weight: 900; color: #2c3e50; transition: transform 0.1s; }
-
-        .game-zone {
-            flex: 1; width: 100%; display: flex; justify-content: center;
-            align-items: center; position: relative;
-        }
-
-        /* Обертка для зуба и штанги */
-        #hero-wrapper {
-            position: relative;
-            transition: transform 0.1s ease-out;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        /* Наш зуб */
+        #tooth-btn {
+            width: 180px; height: 200px; background: white;
+            border: 6px solid #2c3e50; border-radius: 50px;
+            position: relative; cursor: pointer;
+            transition: transform 0.05s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; justify-content: center; align-items: center;
+            -webkit-tap-highlight-color: transparent;
         }
 
         /* Штанга */
-        .barbell {
-            width: 280px; height: 14px; background: #333;
-            border-radius: 7px; position: absolute; top: -40px;
-            transition: transform 0.1s ease-out;
-            display: flex; justify-content: space-between;
+        #barbell {
+            width: 280px; height: 15px; background: #333;
+            position: absolute; top: -35px; border-radius: 10px;
+            transition: transform 0.05s;
         }
-        .weight { width: 30px; height: 70px; background: #222; border-radius: 4px; margin-top: -28px; }
+        .weight { width: 30px; height: 70px; background: #222; position: absolute; top: -28px; border-radius: 5px; }
+        .w-left { left: 0; } .w-right { right: 0; }
 
-        /* Зуб */
-        .tooth {
-            width: 160px; height: 180px; background: white;
-            border: 6px solid #2c3e50; border-radius: 40px 40px 60px 60px;
-            box-shadow: inset -10px -10px 0 #f0f0f0;
+        .eye { width: 15px; height: 15px; background: #2c3e50; border-radius: 50%; margin: 0 20px; }
+
+        /* Эффект нажатия */
+        .active { transform: scale(0.9) !important; }
+        .active #barbell { transform: translateY(-30px); }
+
+        /* Всплывающий текст +1 */
+        .plus-one {
+            position: fixed; color: #27ae60; font-weight: bold; font-size: 30px;
+            pointer-events: none; animation: moveUp 0.6s ease-out forwards;
         }
-
-        /* АНИМАЦИИ ПРИ НАЖАТИИ */
-        .lifting #hero-wrapper { transform: scale(0.9) translateY(10px); }
-        .lifting .barbell { transform: translateY(-50px); }
-        .lifting .score-num { transform: scale(1.1); }
-
-        .btn-top {
-            margin-bottom: 40px; padding: 15px 40px;
-            background: #2c3e50; color: white; border: none; border-radius: 20px;
-            font-weight: bold; font-size: 18px;
+        @keyframes moveUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100px); opacity: 0; }
         }
     </style>
 </head>
-<body id="main-body">
+<body>
 
-    <div class="score-box">
-        <div class="score-num" id="score-val">0</div>
-        <div style="opacity: 0.5; font-weight: bold;">ГАНТЕЛИ</div>
+    <div id="score-container">
+        <div id="score">0</div>
+        <div style="color: #7f8c8d;">ГАНТЕЛИ</div>
     </div>
 
-    <div class="game-zone" id="tap-area">
-        <div id="hero-wrapper">
-            <div class="barbell" id="barbell-el">
-                <div class="weight"></div>
-                <div class="weight"></div>
+    <div id="game-area">
+        <div id="tooth-btn">
+            <div id="barbell">
+                <div class="weight w-left"></div>
+                <div class="weight w-right"></div>
             </div>
-            <div class="tooth"></div>
+            <div class="eye"></div>
+            <div class="eye"></div>
         </div>
     </div>
 
-    <button class="btn-top" onclick="alert('У тебя уже ' + score + ' гантелей!')">СЧЕТ</button>
-
+    <!-- --- ВОТ ТУТ НАЧИНАЕТСЯ JAVASCRIPT --- -->
+    <script src="https://telegram.org"></script>
     <script>
-        // Инициализация Telegram
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Переменные
-        let score = parseInt(localStorage.getItem('zub_score_2026')) || 0;
-        const scoreDisplay = document.getElementById('score-val');
-        const tapArea = document.getElementById('tap-area');
-        const body = document.getElementById('main-body');
+        let count = parseInt(localStorage.getItem('zub_score')) || 0;
+        const scoreEl = document.getElementById('score');
+        const tooth = document.getElementById('tooth-btn');
 
-        // Устанавливаем начальный счет
-        scoreDisplay.innerText = score;
+        scoreEl.innerText = count;
 
-        // ГЛАВНАЯ ФУНКЦИЯ НАЖАТИЯ
-        function processTap(e) {
-            // Предотвращаем стандартное поведение браузера
-            if (e.cancelable) e.preventDefault();
+        // Функция при нажатии
+        function handleTap(e) {
+            count++;
+            scoreEl.innerText = count;
+            localStorage.setItem('zub_score', count);
 
-            // 1. Увеличиваем счет
-            score++;
-            scoreDisplay.innerText = score;
-            localStorage.setItem('zub_score_2026', score);
+            // Анимация нажатия
+            tooth.classList.add('active');
+            setTimeout(() => tooth.classList.remove('active'), 100);
 
-            // 2. Запускаем анимацию
-            body.classList.remove('lifting');
-            void body.offsetWidth; // Магия для перезапуска CSS анимации
-            body.classList.add('lifting');
-            
-            // Убираем класс анимации через 100мс
-            setTimeout(() => {
-                body.classList.remove('lifting');
-            }, 100);
-
-            // 3. Вибрация
+            // Вибрация (для 2026 года)
             if (tg.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('medium');
             }
+
+            // Создаем эффект +1 в месте клика
+            const touch = e.touches ? e.touches[0] : e;
+            const p = document.createElement('div');
+            p.className = 'plus-one';
+            p.innerText = '+1';
+            p.style.left = touch.clientX + 'px';
+            p.style.top = touch.clientY + 'px';
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 600);
         }
 
-        // Слушаем и касания (для телефонов), и клики (для ПК)
-        tapArea.addEventListener('touchstart', processTap, { passive: false });
-        tapArea.addEventListener('mousedown', processTap);
-
+        // Слушатели событий
+        tooth.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleTap(e);
+        });
+        tooth.addEventListener('mousedown', (e) => {
+            handleTap(e);
+        });
     </script>
 </body>
 </html>
