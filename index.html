@@ -72,7 +72,7 @@
         let profit = parseInt(localStorage.getItem('z_pr')) || 0;
         let cost = parseInt(localStorage.getItem('z_co')) || 50;
         let energy = 1000;
-        const maxEnergy = 1000;
+        const maxEnergy = 100;
 
         // Элементы
         const scoreEl = document.getElementById('score');
@@ -130,7 +130,7 @@
         // Движок (пассивный доход и восстановление энергии)
         setInterval(() => {
             score += profit / 10; // Добавляем доход (каждые 100мс)
-            if (energy < maxEnergy) energy += 0.5; // Восстанавливаем энергию
+            if (energy < maxEnergy) energy += 1/(5*60*10); // Восстанавливаем энергию
             updateUI();
         }, 100);
 
