@@ -2,78 +2,31 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram NFT Gifts 2026</title>
     <script src="https://telegram.org"></script>
     <style>
-        :root {
-            --bg: var(--tg-theme-bg-color, #ffffff);
-            --text: var(--tg-theme-text-color, #000000);
-            --button: var(--tg-theme-button-color, #248bcf);
-            --sec-bg: var(--tg-theme-secondary-bg-color, #f4f4f5);
-        }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .card { background: var(--sec-bg); border-radius: 15px; padding: 12px; text-align: center; border: 1px solid rgba(0,0,0,0.05); }
-        .nft-img { width: 100%; border-radius: 10px; aspect-ratio: 1/1; object-fit: cover; margin-bottom: 8px; }
-        .name { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
-        .price { color: #0088cc; font-size: 13px; font-weight: bold; margin-bottom: 10px; }
-        .btn { background: var(--button); color: white; border: none; width: 100%; padding: 8px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        body { background: #f0f0f0; text-align: center; font-family: sans-serif; padding-top: 50px; }
+        .gift-card { background: white; border-radius: 15px; padding: 20px; margin: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        button { background: #248bcf; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        img { width: 150px; border-radius: 10px; }
     </style>
 </head>
 <body>
-    <h3 style="text-align: center;">Лимитированные подарки</h3>
-    <div class="grid" id="nft-container"></div>
+    <h2>Витрина NFT Подарков</h2>
+    
+    <div class="gift-card">
+        <img src="https://nft.fragment.com" alt="Pepe">
+        <h3>Plush Pepe</h3>
+        <p>Цена: 3330 TON</p>
+        <button onclick="openNft()">Купить на Fragment</button>
+    </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready();
+        tg.ready(); // Сообщаем Telegram, что мы загрузились
+        tg.expand(); // Разворачиваем на весь экран
 
-        // Реальные данные подарков Telegram на начало 2026 года
-        const gifts = [
-            {
-                name: "Plush Pepe",
-                price: "Лимитированный",
-                img: "https://nft.fragment.com",
-                url: "https://fragment.com"
-            },
-            {
-                name: "Toy Bear",
-                price: "500 TON",
-                img: "https://nft.fragment.com",
-                url: "https://fragment.com"
-            },
-            {
-                name: "Heroic Helmet",
-                price: "100 TON",
-                img: "https://nft.fragment.com",
-                url: "https://fragment.com"
-            },
-            {
-                name: "White Dog",
-                price: "250 TON",
-                img: "https://nft.fragment.com",
-                url: "https://fragment.com"
-            }
-        ];
-
-        const container = document.getElementById('nft-container');
-
-        gifts.forEach(gift => {
-            const div = document.createElement('div');
-            div.className = 'card';
-            div.innerHTML = `
-                <img src="${gift.img}" class="nft-img">
-                <div class="name">${gift.name}</div>
-                <div class="price">${gift.price}</div>
-                <button class="btn" onclick="openGift('${gift.url}')">Купить на Fragment</button>
-            `;
-            container.appendChild(div);
-        });
-
-        function openGift(url) {
-            // Реальный переход на страницу покупки
-            tg.openLink(url);
+        function openNft() {
+            tg.openLink('https://fragment.com');
         }
     </script>
 </body>
