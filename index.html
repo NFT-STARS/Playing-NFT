@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Strong Tooth Game</title>
     <style>
-        /* --- СТИЛИ (ОФОРМЛЕНИЕ) --- */
         body { 
             margin: 0; padding: 0; background: #e0f0ff; 
             font-family: sans-serif; text-align: center; 
@@ -18,17 +17,15 @@
             height: 60vh; display: flex; justify-content: center; align-items: center;
         }
 
-        /* Наш зуб */
         #tooth-btn {
             width: 180px; height: 200px; background: white;
             border: 6px solid #2c3e50; border-radius: 50px;
             position: relative; cursor: pointer;
             transition: transform 0.05s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex; justify-content: center; align-items: center;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Штанга */
         #barbell {
             width: 280px; height: 15px; background: #333;
             position: absolute; top: -35px; border-radius: 10px;
@@ -37,13 +34,21 @@
         .weight { width: 30px; height: 70px; background: #222; position: absolute; top: -28px; border-radius: 5px; }
         .w-left { left: 0; } .w-right { right: 0; }
 
+        .eyes-row { display: flex; } /* Контейнер для глаз */
         .eye { width: 15px; height: 15px; background: #2c3e50; border-radius: 50%; margin: 0 20px; }
 
-        /* Эффект нажатия */
+        /* --- НОВЫЙ СТИЛЬ: РОТ --- */
+        #mouth {
+            width: 40px; height: 10px; border-bottom: 4px solid #2c3e50; 
+            border-radius: 50%; margin-top: 20px; transition: 0.1s;
+        }
+        .active #mouth { 
+            height: 25px; background: #c0392b; border-radius: 50%; border: none; 
+        } /* Рот открывается при нажатии */
+
         .active { transform: scale(0.9) !important; }
         .active #barbell { transform: translateY(-30px); }
 
-        /* Всплывающий текст +1 */
         .plus-one {
             position: fixed; color: #27ae60; font-weight: bold; font-size: 30px;
             pointer-events: none; animation: moveUp 0.6s ease-out forwards;
@@ -67,12 +72,15 @@
                 <div class="weight w-left"></div>
                 <div class="weight w-right"></div>
             </div>
-            <div class="eye"></div>
-            <div class="eye"></div>
+            <div class="eyes-row">
+                <div class="eye"></div>
+                <div class="eye"></div>
+            </div>
+            <!-- ДОБАВИЛИ РОТ -->
+            <div id="mouth"></div>
         </div>
     </div>
 
-    <!-- --- ВОТ ТУТ НАЧИНАЕТСЯ JAVASCRIPT --- -->
     <script src="https://telegram.org"></script>
     <script>
         const tg = window.Telegram.WebApp;
@@ -84,22 +92,20 @@
 
         scoreEl.innerText = count;
 
-        // Функция при нажатии
         function handleTap(e) {
             count++;
             scoreEl.innerText = count;
             localStorage.setItem('zub_score', count);
 
-            // Анимация нажатия
+            // КЛЮЧЕВОЕ ДЕЙСТВИЕ: добавляем класс active. 
+            // Благодаря CSS, это изменит и масштаб, и штангу, и рот.
             tooth.classList.add('active');
             setTimeout(() => tooth.classList.remove('active'), 100);
 
-            // Вибрация (для 2026 года)
             if (tg.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('medium');
             }
 
-            // Создаем эффект +1 в месте клика
             const touch = e.touches ? e.touches[0] : e;
             const p = document.createElement('div');
             p.className = 'plus-one';
@@ -110,7 +116,6 @@
             setTimeout(() => p.remove(), 600);
         }
 
-        // Слушатели событий
         tooth.addEventListener('touchstart', (e) => {
             e.preventDefault();
             handleTap(e);
