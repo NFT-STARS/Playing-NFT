@@ -14,9 +14,8 @@
         .wood-board { background: linear-gradient(45deg, #5D2E0A, #8B4513); border: 4px solid #3E1F07; border-radius: 10px; color: #FFD700; display: inline-block; padding: 5px 20px; font-weight: bold; margin-top: 10px; }
         .dia-container { position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.9); padding: 5px 12px; border-radius: 20px; border: 2px solid var(--dia-color); color: var(--dia-color); font-weight: bold; z-index: 100; }
 
-        /* ТОП Элементы */
         .top-item { display: flex; align-items: center; padding: 10px; margin: 5px auto; width: 90%; border-radius: 12px; background: #fff; border: 2px solid #ddd; }
-        .rank-1 { border: 3px solid #FFD700 !important; background: #fffdf0 !important; box-shadow: 0 0 10px #FFD70055; }
+        .rank-1 { border: 3px solid #FFD700 !important; background: #fffdf0 !important; }
         .rank-2 { border: 3px solid #C0C0C0 !important; background: #f8f8f8 !important; }
         .rank-3 { border: 3px solid #CD7F32 !important; background: #fff5ed !important; }
         
@@ -26,7 +25,6 @@
         .m-3 { background: linear-gradient(#CD7F32, #A0522D); border: 2px solid #fff; }
         .reward-tag { margin-left: auto; color: var(--dia-color); font-weight: bold; font-size: 13px; background: #e0faff; padding: 2px 6px; border-radius: 8px; }
 
-        /* Персонаж */
         #game-area { height: 40vh; display: flex; justify-content: center; align-items: center; position: relative; margin-top: 20px; }
         #tooth-container { width: 160px; height: 180px; position: relative; transition: transform 0.1s; cursor: pointer; user-select: none; }
         #tooth { width: 100%; height: 100%; background: white; border: 6px solid #dcdde1; border-radius: 40% 40% 50% 50% / 20% 20% 80% 80%; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; z-index: 11; }
@@ -47,7 +45,6 @@
 </head>
 <body>
     <div class="dia-container">💎 <span id="dia-val">0</span></div>
-    
     <button class="btn" style="position:fixed; top:15px; left:15px; z-index:110;" onclick="toggleScreen('top-screen', true)">🏆 ТОП</button>
 
     <div id="top-screen" class="screen">
@@ -101,7 +98,10 @@
         let diamonds = parseInt(localStorage.getItem('z_dia')) || 0;
         let profit = parseFloat(localStorage.getItem('z_pr')) || 1;
         let cost = parseInt(localStorage.getItem('z_co')) || 50;
-        let energy = parseFloat(localStorage.getItem('z_ene')) ?? 100;
+        
+        let energy = parseFloat(localStorage.getItem('z_ene'));
+        if (isNaN(energy)) energy = 100;
+        
         let lastUpdate = parseInt(localStorage.getItem('z_time')) || Date.now();
         
         const maxEnergy = 100;
@@ -129,6 +129,9 @@
             if (energy >= 1) {
                 balance += profit;
                 energy -= 1;
+                // Если энергия была полной, начинаем отсчет восстановления с момента первого клика
+                if (energy === 99) lastUpdate = Date.now();
+                
                 const t = document.getElementById('tooth-container');
                 t.classList.add('active-squat');
                 setTimeout(() => t.classList.remove('active-squat'), 100);
@@ -155,11 +158,7 @@
 
         function renderLeaderboard() {
             const container = document.getElementById('leaderboard');
-            const rewards = {
-                day: [10, 5, 2, 0, 0],
-                week: [100, 50, 20, 0, 0],
-                all: [0, 0, 0, 0, 0]
-            };
+            const rewards = { day: [10, 5, 2, 0, 0], week: [100, 50, 25, 0, 0], all: [0, 0, 0, 0, 0] };
             let html = '';
             const names = ["Зубной Король", "Улыбка2026", "Дентист-Про", "Игрок_4", "Вы (игрок)"];
             const scores = [50000, 25000, 10000, 5000, Math.floor(balance)];
@@ -168,7 +167,6 @@
                 let rankClass = i < 3 ? `rank-${i+1}` : '';
                 let medal = i < 3 ? `<div class="medal-circle m-${i+1}">${i+1}</div>` : `<div style="width:40px; font-weight:bold;">${i+1}</div>`;
                 let rewardText = (rewards[currentTab][i] > 0) ? `<div class="reward-tag">+${rewards[currentTab][i]} 💎</div>` : '';
-                
                 html += `<div class="top-item ${rankClass}">${medal} <b>${name}</b> <span style="margin-left:10px">${scores[i]}</span> ${rewardText}</div>`;
             });
             container.innerHTML = html;
@@ -178,8 +176,8 @@
             const now = Date.now();
             if (energy < maxEnergy) {
                 const elapsed = now - lastUpdate;
-                const gained = Math.floor(elapsed / regenTime);
-                if (gained >= 1) {
+                if (elapsed >= regenTime) {
+                    const gained = Math.floor(elapsed / regenTime);
                     energy = Math.min(maxEnergy, energy + gained);
                     lastUpdate = now - (elapsed % regenTime);
                 }
@@ -189,7 +187,6 @@
                 document.getElementById('e-timer').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
             } else {
                 document.getElementById('e-timer').innerText = "MAX";
-                lastUpdate = now;
             }
         }
 
