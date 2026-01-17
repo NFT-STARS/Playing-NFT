@@ -13,9 +13,7 @@
         #ui { padding-top: 40px; }
         #score { font-size: 50px; font-weight: 900; color: var(--main-color); margin: 0; }
         #profit { color: var(--accent-color); font-size: 18px; font-weight: bold; }
-
         #game-area { height: 55vh; display: flex; justify-content: center; align-items: center; position: relative; }
-        
         #tooth {
             width: 200px; height: 220px; background: white; border: 8px solid var(--main-color);
             border-radius: 60px; position: relative; cursor: pointer;
@@ -25,20 +23,17 @@
         .eye-row { display: flex; margin-bottom: 10px; }
         .eye { width: 18px; height: 18px; background: var(--main-color); border-radius: 50%; margin: 0 15px; }
         #mouth { width: 40px; height: 8px; border-radius: 10px; background: var(--main-color); transition: 0.1s; }
-
         #energy-container { 
             width: 80%; margin: 20px auto; background: #dcdde1; 
             height: 25px; border-radius: 15px; overflow: hidden; position: relative; border: 2px solid var(--main-color);
         }
         #energy-bar { width: 100%; height: 100%; background: var(--accent-color); transition: width 0.3s; }
-        
         #energy-info {
             position: absolute; width: 100%; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             font-weight: bold; color: var(--main-color); font-size: 14px;
             pointer-events: none; z-index: 5;
         }
-
         .active { transform: scale(0.95); }
         .active #mouth { height: 30px; border-radius: 50%; background: #e74c3c; }
         .plus-one {
@@ -46,7 +41,6 @@
             pointer-events: none; animation: fly 0.7s ease-out forwards; z-index: 20;
         }
         @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
-
         #shop-btn {
             background: var(--main-color); color: white; border: none; padding: 15px 50px;
             border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer;
@@ -75,18 +69,32 @@
     <button id="shop-btn" onclick="buyUpgrade()">УЛУЧШИТЬ (+1/сек) — <span id="cost">50</span> 💰</button>
 
     <script>
-        // Загрузка данных (теперь включая энергию)
+        // Инициализация данных
         let score = parseInt(localStorage.getItem('z_sc')) || 0;
         let profit = parseInt(localStorage.getItem('z_pr')) || 0;
         let cost = parseInt(localStorage.getItem('z_co')) || 50;
-        
-        // Читаем сохраненную энергию или ставим 50, если данных нет
-        let energy = parseFloat(localStorage.getItem('z_en')) ?? 50; 
+        let energy = parseInt(localStorage.getItem('z_en'));
+        if (isNaN(energy)) energy = 50;
+
         const maxEnergy = 50;
         const restoreTime = 300; // 5 минут
         
-        // Читаем время последнего захода, чтобы восстановить энергию за время отсутствия (опционально, сейчас просто сохраняем текущий таймер)
+        // Расчет восстановления за время отсутствия
+        let lastSave = parseInt(localStorage.getItem('z_ls')) || Date.now();
+        let secondsPassed = Math.floor((Date.now() - lastSave) / 1000);
+        let energyGained = Math.floor(secondsPassed / restoreTime);
+        energy = Math.min(maxEnergy, energy + energyGained);
+
+        // Текущий таймер
         let currentTimer = parseFloat(localStorage.getItem('z_tm')) || restoreTime;
+        // Уменьшаем таймер на остаток секунд после начисления целой энергии
+        if (energy < maxEnergy) {
+            currentTimer -= (secondsPassed % restoreTime);
+            if (currentTimer <= 0) {
+                energy = Math.min(maxEnergy, energy + 1);
+                currentTimer = restoreTime;
+            }
+        }
 
         const scoreEl = document.getElementById('score');
         const profitEl = document.getElementById('p-val');
@@ -122,7 +130,7 @@
                 const y = e.touches ? e.touches[0].clientY : e.clientY;
                 createPlus(x, y);
                 updateUI();
-                save(); // Сохраняем сразу после клика
+                save();
             }
         }
 
@@ -146,18 +154,13 @@
 
         setInterval(() => {
             score += profit / 10; 
-            
             if (energy < maxEnergy) {
                 currentTimer -= 0.1;
                 if (currentTimer <= 0) {
                     energy += 1;
                     currentTimer = restoreTime;
-                    save(); // Сохраняем при восстановлении ед. энергии
                 }
-            } else {
-                currentTimer = restoreTime;
             }
-            
             updateUI();
         }, 100);
 
@@ -165,10 +168,11 @@
             localStorage.setItem('z_sc', score);
             localStorage.setItem('z_pr', profit);
             localStorage.setItem('z_co', cost);
-            localStorage.setItem('z_en', energy); // Сохранение текущей энергии
-            localStorage.setItem('z_tm', currentTimer); // Сохранение таймера
+            localStorage.setItem('z_en', energy);
+            localStorage.setItem('z_tm', currentTimer);
+            localStorage.setItem('z_ls', Date.now()); // Сохраняем время выхода
         }
-        setInterval(save, 3000);
+        setInterval(save, 2000);
 
         tooth.addEventListener('touchstart', (e) => { e.preventDefault(); tap(e); });
         tooth.addEventListener('mousedown', (e) => tap(e));
