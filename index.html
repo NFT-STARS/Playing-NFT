@@ -36,22 +36,16 @@
             pointer-events: none; z-index: 5;
         }
 
-        /* Экраны ТОП и МАГАЗИН */
         #top-screen, #shop-screen { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: white; z-index: 100; overflow-y: auto; padding-top: 20px;
         }
 
-        .top-list, .shop-list { width: 95%; margin: 0 auto; border-collapse: separate; border-spacing: 0 8px; }
-        .shop-item { background: #f9f9f9; border: 2px solid #eee; border-radius: 15px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .top-tabs { display: flex; justify-content: center; gap: 5px; margin-bottom: 15px; }
+        .tab-btn { padding: 8px 12px; font-size: 12px; border-radius: 10px; background: #eee; border: none; cursor: pointer; }
+        .tab-btn.active { background: var(--main-color); color: white; }
 
-        /* Всплывающее окно при 0 энергии */
-        #energy-modal {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: white; border: 3px solid var(--main-color); border-radius: 20px;
-            padding: 20px; z-index: 200; width: 80%; box-shadow: 0 0 50px rgba(0,0,0,0.5);
-        }
-
+        .top-list { width: 95%; margin: 0 auto; border-collapse: separate; border-spacing: 0 8px; }
         .rank-1 { background: linear-gradient(90deg, #ffd700, #fff9ae) !important; }
         .rank-2 { background: linear-gradient(90deg, #c0c0c0, #e8e8e8) !important; }
         .rank-3 { background: linear-gradient(90deg, #cd7f32, #ffbc8b) !important; }
@@ -62,18 +56,16 @@
             border-radius: 12px; font-size: 14px; font-weight: bold; cursor: pointer;
         }
         .shop-btn { background: var(--shop-color); }
-        
-        .active { transform: scale(0.95); }
-        .plus-one {
-            position: absolute; color: var(--accent-color); font-size: 32px; font-weight: bold;
-            pointer-events: none; animation: fly 0.7s ease-out forwards; z-index: 20;
+
+        #energy-modal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: white; border: 3px solid var(--main-color); border-radius: 20px;
+            padding: 20px; z-index: 200; width: 80%; box-shadow: 0 0 50px rgba(0,0,0,0.5);
         }
-        @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
     </style>
 </head>
 <body>
 
-    <!-- Модалка конца энергии -->
     <div id="energy-modal">
         <h3>Упс! Энергия на нуле ⚡</h3>
         <p>Хочешь восстановить её мгновенно в магазине?</p>
@@ -81,30 +73,29 @@
         <button class="btn" style="background:#ccc" onclick="closeModal()">ПОДОЖДУ</button>
     </div>
 
-    <!-- Экран ТОП -->
     <div id="top-screen">
-        <h2>🏆 РЕЙТИНГ 2026</h2>
-        <div id="next-update" style="font-size:12px; margin-bottom:10px;">Обновление через: 5:00</div>
+        <h2>🏆 РЕЙТИНГ МАСТЕРОВ</h2>
+        <div class="top-tabs">
+            <button class="tab-btn active" onclick="changeTab('all')">Все время</button>
+            <button class="tab-btn" onclick="changeTab('week')">Неделя</button>
+            <button class="tab-btn" onclick="changeTab('day')">День</button>
+        </div>
+        <div id="reset-timer" style="font-size:12px; color:red; margin-bottom:10px;">Сброс через: --:--:--</div>
         <button class="btn" onclick="toggleTop(false)">НАЗАД</button>
         <table class="top-list" id="leaderboard"></table>
     </div>
 
-    <!-- Экран МАГАЗИН -->
     <div id="shop-screen">
         <h2 style="color:var(--shop-color)">⚡ ЭНЕРГО-МАРКЕТ</h2>
-        <p>Ваш баланс: <span id="shop-balance">0</span> 💰</p>
+        <p>Ваш баланс (тратится): <span id="shop-balance">0</span> 💰</p>
         <button class="btn" onclick="toggleShop(false)">ВЕРНУТЬСЯ</button>
-        <div class="shop-list" style="margin-top:20px; padding:10px;">
-            <div class="shop-item">
-                <span>Малое зелье (+10 ⚡)</span>
+        <div style="margin-top:20px; padding:10px;">
+            <div style="background:#f9f9f9; padding:15px; margin-bottom:10px; border-radius:15px; display:flex; justify-content:space-between; align-items:center;">
+                <span>Зелье (+10 ⚡)</span>
                 <button class="btn shop-btn" onclick="buyEnergy(10, 100)">100 💰</button>
             </div>
-            <div class="shop-item">
-                <span>Среднее зелье (+25 ⚡)</span>
-                <button class="btn shop-btn" onclick="buyEnergy(25, 200)">200 💰</button>
-            </div>
-            <div class="shop-item">
-                <span>Полный бак (FULL ⚡)</span>
+            <div style="background:#f9f9f9; padding:15px; margin-bottom:10px; border-radius:15px; display:flex; justify-content:space-between; align-items:center;">
+                <span>Бак (FULL ⚡)</span>
                 <button class="btn shop-btn" onclick="buyEnergy(50, 350)">350 💰</button>
             </div>
         </div>
@@ -113,6 +104,7 @@
     <div id="ui">
         <div id="profit">Прибыль: +<span id="p-val">0</span>/сек</div>
         <p id="score">0</p>
+        <div style="font-size: 12px; color: #7f8c8d;">Всего добыто (в ТОП): <span id="total-val">0</span></div>
     </div>
 
     <div id="game-area">
@@ -134,109 +126,113 @@
     </div>
 
     <script>
-        let score = parseInt(localStorage.getItem('z_sc')) || 0;
+        // БАЛАНС (тратится в магазине)
+        let balance = parseFloat(localStorage.getItem('z_balance')) || 0;
+        
+        // РЕЙТИНГ (не тратится, копится)
+        let scoreTotal = parseFloat(localStorage.getItem('z_sc_total')) || 0;
+        let scoreDay = parseFloat(localStorage.getItem('z_sc_d')) || 0;
+        let scoreWeek = parseFloat(localStorage.getItem('z_sc_w')) || 0;
+        
         let profit = parseInt(localStorage.getItem('z_pr')) || 0;
         let cost = parseInt(localStorage.getItem('z_co')) || 50;
-        let energy = parseInt(localStorage.getItem('z_en'));
-        if (isNaN(energy)) energy = 50;
+        let energy = parseInt(localStorage.getItem('z_en')) ?? 50;
+
+        let dayReset = parseInt(localStorage.getItem('z_dr')) || (Date.now() + 86400000);
+        let weekReset = parseInt(localStorage.getItem('z_wr')) || (Date.now() + 604800000);
+
+        if (Date.now() > dayReset) { scoreDay = 0; dayReset = Date.now() + 86400000; }
+        if (Date.now() > weekReset) { scoreWeek = 0; weekReset = Date.now() + 604800000; }
 
         const maxEnergy = 50;
-        const restoreTime = 300; 
-        let lastTopUpdate = parseInt(localStorage.getItem('z_top_upd')) || 0;
+        const restoreTime = 300;
         let lastSave = parseInt(localStorage.getItem('z_ls')) || Date.now();
+        let currentTimer = parseFloat(localStorage.getItem('z_tm')) || restoreTime;
         let secondsPassed = Math.floor((Date.now() - lastSave) / 1000);
         energy = Math.min(maxEnergy, energy + Math.floor(secondsPassed / restoreTime));
 
-        let currentTimer = parseFloat(localStorage.getItem('z_tm')) || restoreTime;
-        if (energy < maxEnergy) {
-            currentTimer -= (secondsPassed % restoreTime);
-            if (currentTimer <= 0) { energy = Math.min(maxEnergy, energy + 1); currentTimer = restoreTime; }
-        }
-
-        const scoreEl = document.getElementById('score');
-        const energyEl = document.getElementById('energy-bar');
-        const energyNum = document.getElementById('e-num');
-        const tooth = document.getElementById('tooth');
-        const timerEl = document.getElementById('timer');
-
         function updateUI() {
-            scoreEl.innerText = Math.floor(score).toLocaleString();
+            document.getElementById('score').innerText = Math.floor(balance).toLocaleString();
+            document.getElementById('total-val').innerText = Math.floor(scoreTotal).toLocaleString();
             document.getElementById('p-val').innerText = profit;
             document.getElementById('cost').innerText = cost;
-            energyNum.innerText = Math.floor(energy);
-            energyEl.style.width = (energy / maxEnergy * 100) + '%';
-            document.getElementById('shop-balance').innerText = Math.floor(score);
+            document.getElementById('e-num').innerText = Math.floor(energy);
+            document.getElementById('energy-bar').style.width = (energy / maxEnergy * 100) + '%';
+            document.getElementById('shop-balance').innerText = Math.floor(balance).toLocaleString();
             
             if (energy < maxEnergy) {
                 let m = Math.floor(currentTimer / 60);
                 let s = Math.floor(currentTimer % 60);
-                timerEl.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-            } else { timerEl.innerText = "FULL"; }
-            
-            let topCd = Math.max(0, 300 - Math.floor((Date.now() - lastTopUpdate) / 1000));
-            document.getElementById('next-update').innerText = `Обновление через: ${Math.floor(topCd/60)}:${(topCd%60 < 10 ? '0':'') + topCd%60}`;
+                document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+            } else { document.getElementById('timer').innerText = "FULL"; }
+
+            let target = currentTab === 'day' ? dayReset : currentTab === 'week' ? weekReset : null;
+            if (target) {
+                let diff = Math.max(0, Math.floor((target - Date.now()) / 1000));
+                let h = Math.floor(diff / 3600), m = Math.floor((diff % 3600) / 60), s = diff % 60;
+                document.getElementById('reset-timer').innerText = `Сброс через: ${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+            } else { document.getElementById('reset-timer').innerText = "Вечный рейтинг"; }
         }
 
         function tap(e) {
             if (energy >= 1) {
-                score += 1; energy -= 1;
-                tooth.classList.add('active');
-                setTimeout(() => tooth.classList.remove('active'), 100);
-                const x = e.touches ? e.touches[0].clientX : e.clientX;
-                const y = e.touches ? e.touches[0].clientY : e.clientY;
-                createPlus(x, y); updateUI(); save();
-            } else {
-                document.getElementById('energy-modal').style.display = 'block';
-            }
-        }
-
-        function closeModal() { document.getElementById('energy-modal').style.display = 'none'; }
-
-        function buyEnergy(amount, price) {
-            if (score >= price) {
-                score -= price;
-                energy = Math.min(maxEnergy, energy + amount);
+                // Добавляем и в кошелек, и в статистику
+                balance += 1; scoreTotal += 1; scoreDay += 1; scoreWeek += 1;
+                energy -= 1;
+                document.getElementById('tooth').classList.add('active');
+                setTimeout(() => document.getElementById('tooth').classList.remove('active'), 100);
                 updateUI(); save();
-                alert("Энергия пополнена! ⚡");
-            } else { alert("Недостаточно монет! 💰"); }
+            } else { document.getElementById('energy-modal').style.display = 'block'; }
         }
 
-        function toggleShop(show) { document.getElementById('shop-screen').style.display = show ? 'block' : 'none'; }
-        function toggleTop(show) { 
-            document.getElementById('top-screen').style.display = show ? 'block' : 'none'; 
-            if(show) renderTop();
+        let currentTab = 'all';
+        function changeTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            renderTop();
         }
 
         function renderTop() {
-            if (Math.floor((Date.now() - lastTopUpdate) / 1000) < 300 && document.getElementById('leaderboard').innerHTML) return;
-            lastTopUpdate = Date.now(); localStorage.setItem('z_top_upd', lastTopUpdate);
-            let players = [{name: "Вы", score: Math.floor(score)}, {name: "ЗубнойКороль", score: 250000}, {name: "TapMaster", score: 180000}, {name: "Улыбка2026", score: 95000}, {name: "GigaDentist", score: 50000}];
+            let val = currentTab === 'day' ? scoreDay : currentTab === 'week' ? scoreWeek : scoreTotal;
+            let players = [
+                {name: "Вы", score: Math.floor(val)},
+                {name: "Giga_Zub", score: currentTab === 'all' ? 500000 : 1200},
+                {name: "Dentist_Pro", score: currentTab === 'all' ? 200000 : 800}
+            ];
             players.sort((a, b) => b.score - a.score);
             document.getElementById('leaderboard').innerHTML = players.map((p, i) => `
-                <tr class="${i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : ''}">
+                <tr class="${i < 3 ? 'rank-' + (i+1) : ''}">
                     <td style="padding:10px;">${i < 3 ? '🏆' : '#' + (i+1)}</td>
                     <td>${p.name}</td>
-                    <td style="text-align:right">${p.score.toLocaleString()} 💰</td>
+                    <td style="text-align:right">${p.score.toLocaleString()}</td>
                 </tr>`).join('');
         }
 
-        function createPlus(x, y) {
-            const p = document.createElement('div');
-            p.className = 'plus-one'; p.innerText = '+1';
-            p.style.left = x + 'px'; p.style.top = y + 'px';
-            document.body.appendChild(p); setTimeout(() => p.remove(), 700);
+        function buyEnergy(a, p) {
+            if (balance >= p) { 
+                balance -= p; // Уменьшаем только баланс
+                energy = Math.min(maxEnergy, energy + a); 
+                updateUI(); save(); 
+            } else { alert("Мало монет на балансе!"); }
         }
 
         function buyUpgrade() {
-            if (score >= cost) {
-                score -= cost; profit += 1;
-                cost = Math.floor(cost * 1.6);
-                updateUI(); save();
+            if (balance >= cost) { 
+                balance -= cost; // Уменьшаем только баланс
+                profit += 1; 
+                cost = Math.floor(cost * 1.6); 
+                updateUI(); save(); 
             }
         }
 
+        function toggleShop(s) { document.getElementById('shop-screen').style.display = s ? 'block' : 'none'; }
+        function toggleTop(s) { document.getElementById('top-screen').style.display = s ? 'block' : 'none'; if(s) renderTop(); }
+        function closeModal() { document.getElementById('energy-modal').style.display = 'none'; }
+
         setInterval(() => {
-            score += profit / 10; 
+            let gain = profit / 10;
+            balance += gain; scoreTotal += gain; scoreDay += gain; scoreWeek += gain;
             if (energy < maxEnergy) {
                 currentTimer -= 0.1;
                 if (currentTimer <= 0) { energy += 1; currentTimer = restoreTime; }
@@ -245,14 +241,21 @@
         }, 100);
 
         function save() {
-            localStorage.setItem('z_sc', score); localStorage.setItem('z_pr', profit);
-            localStorage.setItem('z_co', cost); localStorage.setItem('z_en', energy);
-            localStorage.setItem('z_tm', currentTimer); localStorage.setItem('z_ls', Date.now());
+            localStorage.setItem('z_balance', balance);
+            localStorage.setItem('z_sc_total', scoreTotal);
+            localStorage.setItem('z_sc_d', scoreDay);
+            localStorage.setItem('z_sc_w', scoreWeek);
+            localStorage.setItem('z_pr', profit);
+            localStorage.setItem('z_co', cost);
+            localStorage.setItem('z_en', energy);
+            localStorage.setItem('z_tm', currentTimer);
+            localStorage.setItem('z_ls', Date.now());
+            localStorage.setItem('z_dr', dayReset);
+            localStorage.setItem('z_wr', weekReset);
         }
         setInterval(save, 2000);
 
-        tooth.addEventListener('touchstart', (e) => { e.preventDefault(); tap(e); });
-        tooth.addEventListener('mousedown', (e) => tap(e));
+        document.getElementById('tooth').addEventListener('mousedown', tap);
         updateUI();
     </script>
 </body>
