@@ -3,193 +3,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Strong Tooth Clicker</title>
+    <title>Strong Tooth v2.0</title>
     <script src="https://telegram.org"></script>
     <style>
         :root {
-            --bg-color: #e3f2fd;
-            --tooth-base-size: 220px;
+            --bg: #f4f7f6;
+            --metal: linear-gradient(180deg, #7f8c8d 0%, #2c3e50 100%);
+            --chrome: linear-gradient(180deg, #bdc3c7 0%, #95a5a6 100%);
         }
 
         body {
-            margin: 0; padding: 0;
-            background-color: var(--bg-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            height: 100vh;
-            display: flex; flex-direction: column; align-items: center;
+            margin: 0; padding: 0; background: var(--bg);
+            font-family: 'Arial Rounded MT Bold', sans-serif;
+            height: 100vh; display: flex; flex-direction: column; align-items: center;
             overflow: hidden; touch-action: none;
         }
 
-        /* Задний фон с гирей */
-        .background-kettlebell {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%; opacity: 0.05;
-            z-index: 0; pointer-events: none;
+        /* Фон с гирей */
+        .bg-icon {
+            position: absolute; top: 50%; opacity: 0.03; width: 300px; z-index: 0;
         }
 
-        .header {
-            z-index: 10; margin-top: 40px; text-align: center;
+        /* Счетчик */
+        .stats { margin-top: 40px; text-align: center; z-index: 2; }
+        .count-text { font-size: 54px; color: #2c3e50; font-weight: bold; }
+
+        /* Игровая зона */
+        .stage { flex: 1; display: flex; justify-content: center; align-items: center; width: 100%; position: relative; }
+
+        /* РЕАЛИСТИЧНАЯ ШТАНГА */
+        .barbell {
+            position: absolute; top: -30px; left: -60px; width: 340px; height: 14px;
+            background: var(--chrome); border-radius: 7px; z-index: 10;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
-
-        .score-box {
-            font-size: 48px; font-weight: 900; color: #1565c0;
-            display: flex; align-items: center; gap: 10px;
+        .plate {
+            position: absolute; background: var(--metal); border-radius: 4px;
+            box-shadow: inset 2px 2px 2px rgba(255,255,255,0.2);
         }
+        .plate-big { width: 20px; height: 70px; top: -28px; }
+        .plate-small { width: 15px; height: 50px; top: -18px; }
+        
+        .left-p1 { left: 0; } .left-p2 { left: 22px; }
+        .right-p1 { right: 0; } .right-p2 { right: 22px; }
 
-        .level-text { font-size: 14px; color: #546e7a; text-transform: uppercase; letter-spacing: 1px; }
-
-        /* Игровой контейнер */
-        .game-world {
-            position: relative; flex: 1; width: 100%;
-            display: flex; justify-content: center; align-items: center;
-            z-index: 5;
+        /* ЗУБ */
+        .tooth-hero {
+            position: relative; width: 220px; height: 230px;
+            background: #fff; border: 5px solid #2c3e50;
+            border-radius: 50px 50px 80px 80px;
+            box-shadow: inset -15px -15px 0 #ecf0f1;
+            transition: transform 0.1s ease;
         }
+        .eye { position: absolute; top: 70px; width: 18px; height: 25px; background: #2c3e50; border-radius: 50%; }
+        .eye.l { left: 55px; } .eye.r { right: 55px; }
+        .mouth { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); width: 40px; height: 20px; border-bottom: 5px solid #2c3e50; border-radius: 50%; }
 
-        /* Композиция Зуба */
-        .tooth-container {
-            position: relative;
-            width: var(--tooth-base-size);
-            height: var(--tooth-base-size);
-            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        /* МЫШЦЫ */
+        .bicep { display: none; position: absolute; top: 100px; width: 60px; height: 60px; background: #fff; border: 5px solid #2c3e50; border-radius: 50%; z-index: -1; }
+        .bicep.l { left: -40px; } .bicep.r { right: -40px; }
+
+        /* Состояния */
+        .lvl-muscles .bicep { display: block; }
+        .tap-active { transform: scale(0.95) translateY(10px); }
+
+        /* ОКНО ТОП */
+        #top-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 100; display: none; flex-direction: column;
         }
+        .top-header { padding: 20px; background: #2c3e50; color: white; font-size: 20px; display: flex; justify-content: space-between; }
+        .top-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .top-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; font-size: 16px; }
+        .top-item.me { background: #e8f4fd; font-weight: bold; border-left: 5px solid #3498db; }
 
-        /* Основное тело зуба (белый мультяшный) */
-        .tooth-body {
-            width: 100%; height: 100%;
-            background: white; border-radius: 40px 40px 60px 60px;
-            border: 6px solid #333; position: relative;
-            box-shadow: inset -10px -10px 0 #eceff1;
-        }
-
-        /* Глаза */
-        .eye {
-            position: absolute; top: 30%; width: 20px; height: 30px;
-            background: #333; border-radius: 50%;
-        }
-        .eye.left { left: 25%; }
-        .eye.right { right: 25%; }
-
-        /* Улыбка */
-        .mouth {
-            position: absolute; top: 55%; left: 50%; transform: translateX(-50%);
-            width: 40px; height: 20px; border-bottom: 5px solid #333; border-radius: 50%;
-        }
-
-        /* Штанга в руках */
-        .barbell-obj {
-            position: absolute; top: -20px; left: -40px; width: 300px; height: 12px;
-            background: #263238; border-radius: 6px; z-index: 20;
-            transition: transform 0.08s;
-        }
-        .barbell-obj::before, .barbell-obj::after {
-            content: ''; position: absolute; width: 50px; height: 50px;
-            background: #212121; border-radius: 8px; top: -20px;
-        }
-        .barbell-obj::before { left: -10px; }
-        .barbell-obj::after { right: -10px; }
-
-        /* МЫШЦЫ (появляются по условию) */
-        .biceps {
-            display: none; position: absolute; top: 40%;
-            width: 50px; height: 50px; background: white;
-            border: 5px solid #333; border-radius: 50%; z-index: -1;
-        }
-        .biceps.left { left: -35px; }
-        .biceps.right { right: -35px; }
-
-        /* Состояния уровней */
-        .lvl-medium .biceps { display: block; } /* Появились руки */
-        .lvl-hard .tooth-container { transform: scale(1.2); } /* Стал больше */
-
-        /* Эффект клика */
-        .active-tap { transform: scale(0.92) translateY(15px); }
-
-        .btn-leaderboard {
-            z-index: 10; margin-bottom: 40px; padding: 18px 45px;
-            background: #1e88e5; color: white; border: none;
-            border-radius: 20px; font-size: 18px; font-weight: bold;
-            box-shadow: 0 10px 20px rgba(30,136,229,0.3);
-        }
+        .btn-top { margin-bottom: 40px; padding: 15px 40px; border-radius: 30px; border: none; background: #3498db; color: white; font-weight: bold; font-size: 18px; box-shadow: 0 4px 15px rgba(52,152,219,0.4); }
     </style>
 </head>
 <body>
 
-    <!-- Задний фон -->
-    <img src="https://cdn-icons-png.flaticon.com" class="background-kettlebell" alt="kettlebell">
-
-    <div class="header">
-        <div class="level-text" id="status">Уровень: Новичок</div>
-        <div class="score-box">
-            <span id="score">0</span>
-            <img src="https://cdn-icons-png.flaticon.com" width="40" alt="гантель">
-        </div>
+    <img src="https://cdn-icons-png.flaticon.com" class="bg-icon" style="left: 10%; top: 20%;">
+    
+    <div class="stats">
+        <div class="count-text" id="score">0</div>
+        <div style="color: #7f8c8d;">ГАНТЕЛЕЙ НАБРАНО</div>
     </div>
 
-    <div class="game-world" id="main-area">
-        <div class="tooth-container" id="tooth-hero">
-            <div class="barbell-obj"></div>
-            <div class="tooth-body">
-                <div class="eye left"></div>
-                <div class="eye right"></div>
-                <div class="mouth"></div>
-                <!-- Мышцы -->
-                <div class="biceps left"></div>
-                <div class="biceps right"></div>
+    <div class="stage" id="tap-zone">
+        <div class="tooth-hero" id="hero">
+            <div class="barbell">
+                <div class="plate plate-big left-p1"></div>
+                <div class="plate plate-small left-p2"></div>
+                <div class="plate plate-big right-p1"></div>
+                <div class="plate plate-small right-p2"></div>
             </div>
+            <div class="eye l"></div>
+            <div class="eye r"></div>
+            <div class="mouth"></div>
+            <div class="bicep l"></div>
+            <div class="bicep r"></div>
         </div>
     </div>
 
-    <button class="btn-leaderboard" onclick="showTop()">🏆 ТОР-150 ГЕРОЕВ</button>
+    <button class="btn-top" onclick="openTop()">🏆 ТОП-150</button>
+
+    <!-- Модалка ТОПа -->
+    <div id="top-modal">
+        <div class="top-header">
+            <span>Рейтинг Атлетов</span>
+            <span onclick="closeTop()" style="cursor:pointer">✖</span>
+        </div>
+        <div class="top-list" id="leaderboard-content"></div>
+    </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let count = parseInt(localStorage.getItem('tooth_clicks')) || 0;
+        let score = parseInt(localStorage.getItem('tooth_score')) || 0;
         const scoreEl = document.getElementById('score');
-        const hero = document.getElementById('tooth-hero');
-        const statusEl = document.getElementById('status');
+        const hero = document.getElementById('hero');
 
-        function updateLevel() {
-            if (count >= 1000) {
-                hero.className = 'tooth-container lvl-medium lvl-hard';
-                statusEl.innerText = "Уровень: ГИГАНТ";
-            } else if (count >= 100) {
-                hero.className = 'tooth-container lvl-medium';
-                statusEl.innerText = "Уровень: Крепыш";
-            }
+        function updateView() {
+            scoreEl.innerText = score;
+            if (score >= 50) hero.classList.add('lvl-muscles');
         }
 
-        function clickHandler(e) {
-            count++;
-            scoreEl.innerText = count;
-            localStorage.setItem('tooth_clicks', count);
+        function doTap() {
+            score++;
+            updateView();
+            localStorage.setItem('tooth_score', score);
+            
+            hero.classList.add('tap-active');
+            setTimeout(() => hero.classList.remove('tap-active'), 80);
 
-            // Анимация
-            hero.classList.add('active-tap');
-            setTimeout(() => hero.classList.remove('active-tap'), 100);
-
-            // Проверка уровня
-            updateLevel();
-
-            // Вибрация
             if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
         }
 
-        document.getElementById('main-area').addEventListener('touchstart', (e) => {
+        document.getElementById('tap-zone').addEventListener('touchstart', (e) => {
             e.preventDefault();
-            clickHandler();
+            doTap();
         });
 
-        // Инициализация при запуске
-        updateLevel();
-        scoreEl.innerText = count;
+        // ЛОГИКА ТОП-150 (С БОТАМИ)
+        function openTop() {
+            const list = document.getElementById('leaderboard-content');
+            list.innerHTML = '';
+            document.getElementById('top-modal').style.display = 'flex';
 
-        function showTop() {
-            tg.showAlert("Рейтинг в разработке. Вы набрали: " + count + " гантелей!");
+            // Генерируем 149 ботов + Вы
+            let players = [];
+            for (let i = 0; i < 149; i++) {
+                players.push({
+                    name: "Атлет #" + (Math.floor(Math.random() * 9000) + 1000),
+                    score: Math.floor(Math.random() * 5000),
+                    isMe: false
+                });
+            }
+            players.push({ name: "Вы (Чемпион)", score: score, isMe: true });
+
+            // Сортировка по очкам
+            players.sort((a, b) => b.score - a.score);
+
+            // Рендер ТОП-150
+            players.slice(0, 150).forEach((p, index) => {
+                const item = document.createElement('div');
+                item.className = `top-item ${p.isMe ? 'me' : ''}`;
+                item.innerHTML = `
+                    <span>${index + 1}. ${p.name}</span>
+                    <span>${p.score} 🦾</span>
+                `;
+                list.appendChild(item);
+            });
         }
+
+        function closeTop() {
+            document.getElementById('top-modal').style.display = 'none';
+        }
+
+        updateView();
     </script>
 </body>
 </html>
