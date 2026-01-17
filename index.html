@@ -3,135 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NFT STARS - Tap & Earn</title>
+    <title>NFT Stars Simulator</title>
     <script src="https://telegram.org"></script>
     <style>
-        :root { --bg: #0b0e11; --accent: #fcd535; --card: #1e2329; }
+        :root {
+            --bg-color: #0d1117;
+            --accent-color: #fcd535;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
         body {
-            font-family: 'Inter', sans-serif; background: var(--bg); color: white;
-            margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center;
-            overflow: hidden; touch-action: none; user-select: none;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            background: radial-gradient(circle at top, #1a202c 0%, #0d1117 100%);
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
         }
-        .header { width: 100%; padding: 20px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
-        .balance { font-size: 42px; font-weight: 900; color: var(--accent); margin-top: 20px; display: flex; align-items: center; gap: 10px; }
+
+        /* Шапка профиля */
+        .header {
+            width: 90%;
+            padding: 20px;
+            margin-top: 15px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent-color); color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; }
         
-        /* Главная кнопка (Монета) */
-        .click-area {
-            flex: 1; display: flex; align-items: center; justify-content: center; width: 100%;
-        }
-        .coin {
-            width: 250px; height: 250px; background: radial-gradient(circle, #fcd535 0%, #f7b500 100%);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 120px; box-shadow: 0 0 50px rgba(252, 213, 53, 0.3);
-            cursor: pointer; transition: transform 0.05s;
-            border: 8px solid rgba(255,255,255,0.2);
-        }
-        .coin:active { transform: scale(0.95); }
+        .stats { text-align: right; }
+        .balance { color: var(--accent-color); font-size: 20px; font-weight: 800; }
+        .spent { font-size: 11px; opacity: 0.6; }
 
-        /* Энергия */
-        .energy-container { width: 80%; margin-bottom: 40px; }
-        .energy-bar { width: 100%; height: 12px; background: #333; border-radius: 6px; overflow: hidden; }
-        .energy-fill { height: 100%; background: var(--accent); transition: width 0.2s; }
-        .energy-text { text-align: center; margin-top: 8px; font-size: 14px; opacity: 0.8; }
-
-        /* Всплывающие цифры */
-        .plus-one {
-            position: absolute; color: var(--accent); font-size: 24px; font-weight: bold;
-            pointer-events: none; animation: floatUp 0.8s forwards; z-index: 100;
+        /* Игровая зона */
+        .main-stage {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
         }
-        @keyframes floatUp {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-100px); opacity: 0; }
+
+        .box-container {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .box-emoji {
+            font-size: 120px;
+            filter: drop-shadow(0 0 20px rgba(252, 213, 53, 0.3));
+        }
+
+        /* Анимация встряски при клике */
+        .shake { animation: shakeAnim 0.5s ease-in-out; }
+        @keyframes shakeAnim {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(10deg) scale(1.1); }
+            75% { transform: rotate(-10deg) scale(1.1); }
+        }
+
+        /* Кнопка открытия */
+        .open-btn {
+            width: 85%;
+            padding: 18px;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #fcd535 0%, #f7b500 100%);
+            border: none;
+            border-radius: 18px;
+            color: #000;
+            font-size: 18px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 20px rgba(252, 213, 53, 0.2);
+            cursor: pointer;
+        }
+
+        /* Сетка инвентаря */
+        .inventory-panel {
+            width: 100%;
+            background: var(--glass-bg);
+            border-top: 1px solid var(--glass-border);
+            border-radius: 30px 30px 0 0;
+            padding: 20px;
+            max-height: 30vh;
+            overflow-y: auto;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .gift-slot {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div id="u-name" style="font-weight: bold;">PLAYER</div>
-        <div style="font-size: 12px; opacity: 0.5;">RANK: STARTER</div>
-    </div>
-
-    <div class="balance">
-        ⭐ <span id="balance">0</span>
-    </div>
-
-    <div class="click-area" id="tap-zone">
-        <div class="coin" id="coin">🌟</div>
-    </div>
-
-    <div class="energy-container">
-        <div class="energy-bar">
-            <div class="energy-fill" id="energy-fill" style="width: 100%;"></div>
+        <div class="user-info">
+            <div class="avatar" id="avatar-char">?</div>
+            <div id="username">Player</div>
         </div>
-        <div class="energy-text">⚡ <span id="energy-val">1000</span> / 1000</div>
+        <div class="stats">
+            <div class="balance">⭐ <span id="bal-val">500</span></div>
+            <div class="spent">Затраты: <span id="spent-val">0</span></div>
+        </div>
+    </div>
+
+    <div class="main-stage">
+        <div class="box-container" id="box-trigger" onclick="openBox()">
+            <div class="box-emoji" id="visual-box">🎁</div>
+        </div>
+        <p style="opacity: 0.5; font-size: 14px; margin-top: 20px;">Нажми на сундук или кнопку</p>
+    </div>
+
+    <button class="open-btn" onclick="openBox()">Открыть за 25 ⭐</button>
+
+    <div class="inventory-panel">
+        <div style="font-weight: bold; font-size: 14px; opacity: 0.8;">ВАША КОЛЛЕКЦИЯ NFT</div>
+        <div class="inventory-grid" id="inv-grid">
+            <!-- Слоты будут здесь -->
+        </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready(); tg.expand();
+        tg.ready();
+        tg.expand();
 
-        let stars = parseInt(localStorage.getItem('tap_stars')) || 0;
-        let energy = parseInt(localStorage.getItem('tap_energy')) || 1000;
-        const maxEnergy = 1000;
+        let bal = 500;
+        let spent = 0;
+        const items = ['💎', '🚀', '👑', '👻', '🏆', '🌈', '🔥', '🌀'];
 
-        function updateUI() {
-            document.getElementById('balance').innerText = stars;
-            document.getElementById('energy-val').innerText = energy;
-            document.getElementById('energy-fill').style.width = (energy / maxEnergy * 100) + '%';
-            localStorage.setItem('tap_stars', stars);
-            localStorage.setItem('tap_energy', energy);
-        }
-
-        // Логика клика
-        const tapZone = document.getElementById('tap-zone');
-        tapZone.addEventListener('touchstart', (e) => {
-            if (energy <= 0) {
+        function openBox() {
+            if (bal < 25) {
                 tg.HapticFeedback.notificationOccurred('error');
+                tg.showAlert("Недостаточно звезд!");
                 return;
             }
 
-            // Мультитач поддержка
-            for (let i = 0; i < e.touches.length; i++) {
-                if (energy > 0) {
-                    processTap(e.touches[i].clientX, e.touches[i].clientY);
-                }
-            }
-        });
+            // Визуальный эффект
+            const box = document.getElementById('box-trigger');
+            box.classList.add('shake');
+            tg.HapticFeedback.impactOccurred('heavy');
 
-        function processTap(x, y) {
-            stars += 1;
-            energy -= 1;
-            
-            tg.HapticFeedback.impactOccurred('light');
-            showPlusOne(x, y);
-            updateUI();
+            setTimeout(() => {
+                box.classList.remove('shake');
+                bal -= 25;
+                spent += 25;
+                
+                const win = items[Math.floor(Math.random() * items.length)];
+                addSlot(win);
+                updateDisplay();
+                
+                tg.HapticFeedback.notificationOccurred('success');
+            }, 500);
         }
 
-        function showPlusOne(x, y) {
-            const el = document.createElement('div');
-            el.className = 'plus-one';
-            el.innerText = '+1';
-            el.style.left = x + 'px';
-            el.style.top = y + 'px';
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 800);
+        function addSlot(emoji) {
+            const grid = document.getElementById('inv-grid');
+            const slot = document.createElement('div');
+            slot.className = 'gift-slot';
+            slot.innerText = emoji;
+            grid.prepend(slot);
         }
 
-        // Регенерация энергии
-        setInterval(() => {
-            if (energy < maxEnergy) {
-                energy = Math.min(maxEnergy, energy + 1);
-                updateUI();
-            }
-        }, 1000);
+        function updateDisplay() {
+            document.getElementById('bal-val').innerText = bal;
+            document.getElementById('spent-val').innerText = spent;
+        }
 
-        // Имя пользователя
+        // Загрузка данных пользователя
         if (tg.initDataUnsafe?.user) {
-            document.getElementById('u-name').innerText = tg.initDataUnsafe.user.first_name.toUpperCase();
+            const user = tg.initDataUnsafe.user;
+            document.getElementById('username').innerText = user.first_name;
+            document.getElementById('avatar-char').innerText = user.first_name.charAt(0);
         }
 
-        updateUI();
+        updateDisplay();
     </script>
 </body>
 </html>
+
