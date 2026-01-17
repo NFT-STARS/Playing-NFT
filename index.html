@@ -3,153 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NFT STARS - Trading</title>
+    <title>NFT STARS - Case Simulator</title>
     <script src="https://telegram.org"></script>
     <style>
-        :root { --bg: #0b0e11; --accent: #fcd535; --card: #1e2329; }
-        body { font-family: sans-serif; background: var(--bg); color: white; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        
-        .header { width: 100%; display: flex; justify-content: space-between; align-items: center; }
-        .balance-box { background: var(--card); padding: 10px 20px; border-radius: 15px; border: 1px solid var(--accent); font-weight: bold; }
-        
-        .chest-container { margin: 40px 0; text-align: center; }
-        .chest { font-size: 80px; transition: 0.3s; cursor: pointer; }
-        .shake { animation: shake 0.5s infinite; }
-        @keyframes shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(5deg); } 75% { transform: rotate(-5deg); } }
-
-        .btn-open { background: var(--accent); color: black; border: none; padding: 18px; border-radius: 15px; font-weight: bold; width: 100%; font-size: 16px; }
-
-        /* Окно выигрыша */
-        #modal {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9);
-            flex-direction: column; align-items: center; justify-content: center; z-index: 100; padding: 20px;
+        :root {
+            --bg: #0b0e11;
+            --accent: #fcd535;
+            --card: #1e2329;
+            --common: #848e9c;
+            --rare: #3b82f6;
+            --jackpot: #ef4444;
         }
-        .win-card { background: var(--card); padding: 30px; border-radius: 20px; text-align: center; width: 80%; border: 1px solid var(--accent); }
-        .win-icon { font-size: 60px; margin-bottom: 10px; }
-        .win-btns { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 20px; }
-        .btn-keep { background: #4cd137; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; }
-        .btn-sell { background: #e84118; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; }
 
-        .inventory { width: 100%; margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .item { background: var(--card); padding: 8px; border-radius: 10px; text-align: center; font-size: 11px; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: white;
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center;
+            overflow: hidden; touch-action: manipulation;
+        }
+
+        /* Шапка */
+        .header {
+            width: 100%; padding: 20px; box-sizing: border-box;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.2);
+        }
+        .balance-pill {
+            background: var(--card); border: 1px solid var(--accent);
+            padding: 8px 15px; border-radius: 20px; font-weight: 800;
+        }
+
+        /* Зона сундука */
+        .game-zone {
+            flex: 1; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; width: 100%;
+        }
+
+        .chest {
+            font-size: 120px; cursor: pointer; transition: 0.3s;
+            filter: drop-shadow(0 0 20px rgba(252, 213, 53, 0.2));
+        }
+        .shake { animation: shakeAnim 0.5s infinite; }
+        @keyframes shakeAnim {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1) rotate(5deg); }
+            100% { transform: scale(1); }
+        }
+
+        /* Рулетка */
+        #roulette-container {
+            display: none; width: 100%; height: 150px;
+            position: relative; overflow: hidden; margin: 20px 0;
+            background: rgba(255,255,255,0.03);
+            border-top: 2px solid var(--accent); border-bottom: 2px solid var(--accent);
+        }
+        .pointer {
+            position: absolute; left: 50%; top: 0; bottom: 0; width: 4px;
+            background: var(--accent); z-index: 5; transform: translateX(-50%);
+            box-shadow: 0 0 15px var(--accent);
+        }
+        #roulette-track {
+            display: flex; position: absolute; left: 50%; height: 100%;
+            transition: transform 4s cubic-bezier(0.15, 0, 0.05, 1);
+        }
+        .slot {
+            min-width: 120px; height: 150px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* Кнопка */
+        .open-btn {
+            width: 80%; padding: 20px; margin-bottom: 40px;
+            background: var(--accent); color: black; border: none;
+            border-radius: 18px; font-size: 20px; font-weight: 900;
+            box-shadow: 0 10px 25px rgba(252, 213, 53, 0.3);
+        }
+
+        /* Результат */
+        #result-modal {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98);
+            z-index: 100; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .win-icon { font-size: 100px; margin-bottom: 20px; animation: popIn 0.5s cubic-bezier(0.17, 0.89, 0.32, 1.49); }
+        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+        
+        .modal-btn {
+            width: 250px; padding: 15px; margin: 10px; border-radius: 12px;
+            border: none; font-weight: bold; font-size: 16px;
+        }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div id="u-name">Игрок</div>
-        <div class="balance-box">⭐ <span id="balance">500</span></div>
+        <div id="u-name" style="font-weight: bold;">NFT STARS</div>
+        <div class="balance-pill">⭐ <span id="balance-val">500</span></div>
     </div>
 
-    <div class="chest-container" onclick="openChest()">
-        <div class="chest" id="chest-emoji">🎁</div>
-        <p style="color: gray;">Нажми на сундук</p>
-    </div>
+    <div class="game-zone">
+        <div id="chest-ui" style="text-align: center;">
+            <div class="chest" id="main-chest" onclick="handleStart()">🎁</div>
+            <p style="opacity: 0.5; margin-top: 15px;">Испытай удачу в 2026!</p>
+        </div>
 
-    <button class="btn-open" onclick="openChest()">ОТКРЫТЬ (25 ⭐)</button>
-
-    <div id="modal">
-        <div class="win-card">
-            <div id="win-label" style="color: var(--accent); margin-bottom: 10px;">ВЫПАЛ ПОДАРOК!</div>
-            <div class="win-icon" id="win-icon">🎁</div>
-            <div id="win-name" style="font-weight: bold; font-size: 20px;">Название</div>
-            <div id="win-price" style="margin-top: 5px; opacity: 0.8;">Цена: 0 ⭐</div>
-            <div class="win-btns">
-                <button class="btn-keep" onclick="keepItem()">В КОЛЛЕКЦИЮ</button>
-                <button class="btn-sell" id="sell-text" onclick="sellItem()">ПРОДАТЬ ЗА 0 ⭐</button>
-            </div>
+        <div id="roulette-container">
+            <div class="pointer"></div>
+            <div id="roulette-track"></div>
         </div>
     </div>
 
-    <div style="margin-top: 30px; font-weight: bold; width: 100%;">ИНВЕНТАРЬ:</div>
-    <div class="inventory" id="inventory"></div>
+    <button class="open-btn" id="btn-main" onclick="handleStart()">ОТКРЫТЬ (25 ⭐)</button>
+
+    <div id="result-modal">
+        <div class="win-icon" id="res-icon">🌟</div>
+        <h1 id="res-name" style="margin: 0;">Rare Gift</h1>
+        <p id="res-price" style="font-size: 24px; color: var(--accent);">Цена: 50 ⭐</p>
+        <button class="modal-btn" style="background: #4cd137; color: white;" onclick="actionResult('keep')">В КОЛЛЕКЦИЮ</button>
+        <button class="modal-btn" style="background: #e84118; color: white;" onclick="actionResult('sell')">ПРОДАТЬ</button>
+    </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready(); tg.expand();
 
-        let balance = parseFloat(localStorage.getItem('stars_26')) || 500;
-        let inventory = JSON.parse(localStorage.getItem('inv_26')) || [];
-        let lastReward = null;
+        let balance = parseFloat(localStorage.getItem('stars_2026')) || 500;
+        let lastItem = null;
 
-        function updateUI() {
-            document.getElementById('balance').innerText = balance.toFixed(1);
-            document.getElementById('inventory').innerHTML = inventory.map(i => `<div class="item"><div>${i.icon}</div>${i.val} ⭐</div>`).join('');
-            if (tg.initDataUnsafe?.user) document.getElementById('u-name').innerText = tg.initDataUnsafe.user.first_name;
-        }
+        // Шансы и предметы
+        const items = [
+            {n: 'Small Pack', i: '⭐', v: 5, p: 0.7},
+            {n: 'Big Stars', i: '💰', v: 20, p: 0.15},
+            {n: 'Rare NFT', i: '💎', v: 100, p: 0.1},
+            {n: 'JACKPOT', i: '🏆', v: 1500, p: 0.005} // 0.05% в пересчете на логику
+        ];
 
-        function openChest() {
-            if (balance < 25) return tg.showAlert("Мало звезд!");
+        function handleStart() {
+            if (balance < 25) { tg.showAlert("Недостаточно Звезд!"); return; }
             balance -= 25;
-            updateUI();
+            updateBalance();
 
-            const chest = document.getElementById('chest-emoji');
+            document.getElementById('btn-main').style.display = 'none';
+            const chest = document.getElementById('main-chest');
             chest.classList.add('shake');
             tg.HapticFeedback.impactOccurred('heavy');
 
+            setTimeout(runRoulette, 1200);
+        }
+
+        function runRoulette() {
+            document.getElementById('chest-ui').style.display = 'none';
+            const container = document.getElementById('roulette-container');
+            const track = document.getElementById('roulette-track');
+            container.style.display = 'block';
+
+            // Генерируем 50 слотов
+            track.innerHTML = '';
+            for(let i=0; i<50; i++) {
+                const randItem = items[Math.floor(Math.random()*items.length)];
+                track.innerHTML += `<div class="slot"><span style="font-size:40px">${randItem.i}</span></div>`;
+            }
+
+            // Определяем реальный приз по шансам
+            const r = Math.random();
+            if(r < 0.005) lastItem = {n: 'MEGA GIFT', i: '🎁', v: Math.floor(Math.random()*2200+300)};
+            else if(r < 0.15) lastItem = {n: 'RARE STARS', i: '💎', v: [25, 30, 50, 100, 250][Math.floor(Math.random()*5)]};
+            else lastItem = {n: 'STARS', i: '⭐', v: [1, 1.5, 5, 10, 15, 20][Math.floor(Math.random()*6)]};
+
+            // Ставим приз в 45-й слот
+            const targetSlot = track.children[44];
+            targetSlot.innerHTML = `<span style="font-size:50px">${lastItem.i}</span><div style="font-size:10px">${lastItem.n}</div>`;
+            targetSlot.style.color = var(--accent);
+
+            // Анимация смещения (120px - ширина слота)
+            const offset = 44 * 120;
             setTimeout(() => {
-                chest.classList.remove('shake');
-                calculateReward();
-            }, 1200);
+                track.style.transform = `translateX(-${offset}px)`;
+            }, 100);
+
+            setTimeout(showResult, 4500);
         }
 
-        function calculateReward() {
-            const rand = Math.random() * 100;
-            let reward = { val: 0, icon: '⭐', name: 'Звезды' };
-
-            if (rand <= 0.5) { // Джекпот 0.5%
-                reward.val = Math.floor(Math.random() * 2200) + 300;
-                reward.icon = '🏆'; reward.name = 'Super NFT';
-            } else if (rand <= 15) { // Редкие
-                const rare = [25, 50, 100, 250];
-                reward.val = rare[Math.floor(Math.random() * rare.length)];
-                reward.icon = '💎'; reward.name = 'Rare Star';
-            } else { // Обычные
-                const common = [1, 5, 10, 20];
-                reward.val = common[Math.floor(Math.random() * common.length)];
-                reward.icon = '⭐'; reward.name = 'Small Stars';
-            }
-
-            lastReward = reward;
-
-            if (reward.val >= 25) {
-                // Если редкий — открываем окно выбора
-                showModal(reward);
-            } else {
-                // Если дешевый — просто добавляем к балансу
-                balance += reward.val;
-                tg.showAlert(`Выпало: ${reward.val} ⭐`);
-                updateUI();
-            }
-        }
-
-        function showModal(item) {
-            document.getElementById('win-icon').innerText = item.icon;
-            document.getElementById('win-name').innerText = item.name;
-            document.getElementById('win-price').innerText = `Стоимость: ${item.val} ⭐`;
-            document.getElementById('sell-text').innerText = `ПРОДАТЬ ЗА ${item.val} ⭐`;
-            document.getElementById('modal').style.display = 'flex';
+        function showResult() {
             tg.HapticFeedback.notificationOccurred('success');
+            document.getElementById('result-modal').style.display = 'flex';
+            document.getElementById('res-icon').innerText = lastItem.i;
+            document.getElementById('res-name').innerText = lastItem.n;
+            document.getElementById('res-price').innerText = `Цена: ${lastItem.v} ⭐`;
         }
 
-        function keepItem() {
-            inventory.unshift(lastReward);
-            localStorage.setItem('inv_26', JSON.stringify(inventory));
-            closeModal();
+        function actionResult(type) {
+            if (type === 'sell') {
+                balance += lastItem.v;
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+            localStorage.setItem('stars_2026', balance);
+            location.reload(); // Рестарт игры
         }
 
-        function sellItem() {
-            balance += lastReward.val;
-            localStorage.setItem('stars_26', balance);
-            closeModal();
+        function updateBalance() {
+            document.getElementById('balance-val').innerText = balance.toFixed(1);
+            localStorage.setItem('stars_2026', balance);
         }
 
-        function closeModal() {
-            document.getElementById('modal').style.display = 'none';
-            updateUI();
-        }
-
-        updateUI();
+        // Инициализация
+        updateBalance();
+        if(tg.initDataUnsafe?.user) document.getElementById('u-name').innerText = tg.initDataUnsafe.user.first_name;
     </script>
 </body>
 </html>
