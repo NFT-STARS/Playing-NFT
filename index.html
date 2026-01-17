@@ -1,125 +1,134 @@
-            <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stars Gift Simulator</title>
+    <title>NFT STARS - Tap & Earn</title>
     <script src="https://telegram.org"></script>
     <style>
-        :root {
-            --bg: #050505;
-            --accent: #f7b500;
-            --glass: rgba(255, 255, 255, 0.07);
-        }
+        :root { --bg: #0b0e11; --accent: #fcd535; --card: #1e2329; }
         body {
-            font-family: -apple-system, sans-serif;
-            background: var(--bg);
-            color: white;
-            margin: 0; padding: 20px;
-            display: flex; flex-direction: column; align-items: center;
+            font-family: 'Inter', sans-serif; background: var(--bg); color: white;
+            margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center;
+            overflow: hidden; touch-action: none; user-select: none;
         }
-        /* Стиль профиля как в GiftUp */
-        .user-card {
-            width: 100%; background: var(--glass);
-            padding: 20px; border-radius: 24px;
-            text-align: center; border: 1px solid rgba(255,255,255,0.1);
+        .header { width: 100%; padding: 20px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
+        .balance { font-size: 42px; font-weight: 900; color: var(--accent); margin-top: 20px; display: flex; align-items: center; gap: 10px; }
+        
+        /* Главная кнопка (Монета) */
+        .click-area {
+            flex: 1; display: flex; align-items: center; justify-content: center; width: 100%;
         }
-        .stars-balance {
-            font-size: 32px; font-weight: 800; color: var(--accent);
-            display: flex; align-items: center; justify-content: center; gap: 8px;
+        .coin {
+            width: 250px; height: 250px; background: radial-gradient(circle, #fcd535 0%, #f7b500 100%);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 120px; box-shadow: 0 0 50px rgba(252, 213, 53, 0.3);
+            cursor: pointer; transition: transform 0.05s;
+            border: 8px solid rgba(255,255,255,0.2);
         }
-        /* Анимация подарка */
-        .box-area { margin: 60px 0; position: relative; }
-        .gift-box {
-            font-size: 100px; cursor: pointer;
-            transition: transform 0.3s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+        .coin:active { transform: scale(0.95); }
+
+        /* Энергия */
+        .energy-container { width: 80%; margin-bottom: 40px; }
+        .energy-bar { width: 100%; height: 12px; background: #333; border-radius: 6px; overflow: hidden; }
+        .energy-fill { height: 100%; background: var(--accent); transition: width 0.2s; }
+        .energy-text { text-align: center; margin-top: 8px; font-size: 14px; opacity: 0.8; }
+
+        /* Всплывающие цифры */
+        .plus-one {
+            position: absolute; color: var(--accent); font-size: 24px; font-weight: bold;
+            pointer-events: none; animation: floatUp 0.8s forwards; z-index: 100;
         }
-        .gift-box.open-anim { animation: openStep 1.5s forwards; }
-        @keyframes openStep {
-            0% { transform: scale(1) rotate(0); }
-            20% { transform: scale(1.2) rotate(10deg); }
-            40% { transform: scale(1.2) rotate(-10deg); }
-            100% { transform: scale(0); opacity: 0; }
-        }
-        /* Окно награды */
-        #reward-modal {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-            flex-direction: column; align-items: center; justify-content: center; z-index: 100;
-        }
-        .btn {
-            width: 80%; padding: 16px; border-radius: 16px; border: none;
-            font-weight: bold; font-size: 16px; margin: 8px;
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100px); opacity: 0; }
         }
     </style>
 </head>
 <body>
 
-    <div class="user-card">
-        <div id="username" style="margin-bottom: 10px; opacity: 0.8;">Загрузка...</div>
-        <div class="stars-balance">⭐ <span id="stars-count">500</span></div>
+    <div class="header">
+        <div id="u-name" style="font-weight: bold;">PLAYER</div>
+        <div style="font-size: 12px; opacity: 0.5;">RANK: STARTER</div>
     </div>
 
-    <div class="box-area">
-        <div class="gift-box" id="box" onclick="handleOpen()">🎁</div>
+    <div class="balance">
+        ⭐ <span id="balance">0</span>
     </div>
 
-    <button class="btn" style="background: var(--accent); color: black;" onclick="handleOpen()">ОТКРЫТЬ (25 ⭐)</button>
+    <div class="click-area" id="tap-zone">
+        <div class="coin" id="coin">🌟</div>
+    </div>
 
-    <div id="reward-modal">
-        <div id="reward-icon" style="font-size: 80px; margin-bottom: 20px;">💎</div>
-        <h2 id="reward-name">Rare Gift</h2>
-        <p id="reward-val" style="color: var(--accent); font-size: 24px; font-weight: bold;">100 ⭐</p>
-        <button class="btn" style="background: #4cd137; color: white;" onclick="claim(true)">В КОЛЛЕКЦИЮ</button>
-        <button class="btn" style="background: rgba(255,255,255,0.1); color: white;" onclick="claim(false)">ПРОДАТЬ</button>
+    <div class="energy-container">
+        <div class="energy-bar">
+            <div class="energy-fill" id="energy-fill" style="width: 100%;"></div>
+        </div>
+        <div class="energy-text">⚡ <span id="energy-val">1000</span> / 1000</div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+        tg.ready(); tg.expand();
 
-        let stars = parseInt(localStorage.getItem('stars_26')) || 500;
-        let currentItem = null;
+        let stars = parseInt(localStorage.getItem('tap_stars')) || 0;
+        let energy = parseInt(localStorage.getItem('tap_energy')) || 1000;
+        const maxEnergy = 1000;
 
         function updateUI() {
-            document.getElementById('stars-count').innerText = stars;
-            if (tg.initDataUnsafe?.user) {
-                document.getElementById('username').innerText = tg.initDataUnsafe.user.first_name.toUpperCase();
+            document.getElementById('balance').innerText = stars;
+            document.getElementById('energy-val').innerText = energy;
+            document.getElementById('energy-fill').style.width = (energy / maxEnergy * 100) + '%';
+            localStorage.setItem('tap_stars', stars);
+            localStorage.setItem('tap_energy', energy);
+        }
+
+        // Логика клика
+        const tapZone = document.getElementById('tap-zone');
+        tapZone.addEventListener('touchstart', (e) => {
+            if (energy <= 0) {
+                tg.HapticFeedback.notificationOccurred('error');
+                return;
             }
-        }
 
-        function handleOpen() {
-            if (stars < 25) return tg.showAlert("Мало Звезд!");
-            stars -= 25;
+            // Мультитач поддержка
+            for (let i = 0; i < e.touches.length; i++) {
+                if (energy > 0) {
+                    processTap(e.touches[i].clientX, e.touches[i].clientY);
+                }
+            }
+        });
+
+        function processTap(x, y) {
+            stars += 1;
+            energy -= 1;
+            
+            tg.HapticFeedback.impactOccurred('light');
+            showPlusOne(x, y);
             updateUI();
-
-            const box = document.getElementById('box');
-            box.classList.add('open-anim');
-            tg.HapticFeedback.impactOccurred('heavy');
-
-            setTimeout(() => {
-                showReward();
-            }, 1500);
         }
 
-        function showReward() {
-            const r = Math.random();
-            // Шансы как в запросе: 0.05% на джекпот, 15% на редкие
-            if (r < 0.0005) currentItem = { n: 'MYTHIC NFT', i: '🏆', v: 2500 };
-            else if (r < 0.15) currentItem = { n: 'RARE GEM', i: '💎', v: 150 };
-            else currentItem = { n: 'STARS PACK', i: '⭐', v: 15 };
-
-            document.getElementById('reward-icon').innerText = currentItem.i;
-            document.getElementById('reward-name').innerText = currentItem.n;
-            document.getElementById('reward-val').innerText = currentItem.v + " ⭐";
-            document.getElementById('reward-modal').style.display = 'flex';
-            tg.HapticFeedback.notificationOccurred('success');
+        function showPlusOne(x, y) {
+            const el = document.createElement('div');
+            el.className = 'plus-one';
+            el.innerText = '+1';
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 800);
         }
 
-        function claim(keep) {
-            if (!keep) stars += currentItem.v;
-            localStorage.setItem('stars_26', stars);
-            location.reload(); // Перезапуск для новой попытки
+        // Регенерация энергии
+        setInterval(() => {
+            if (energy < maxEnergy) {
+                energy = Math.min(maxEnergy, energy + 1);
+                updateUI();
+            }
+        }, 1000);
+
+        // Имя пользователя
+        if (tg.initDataUnsafe?.user) {
+            document.getElementById('u-name').innerText = tg.initDataUnsafe.user.first_name.toUpperCase();
         }
 
         updateUI();
