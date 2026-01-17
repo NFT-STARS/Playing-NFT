@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NFT STARS - Play & Earn</title>
+    <script src="https://telegram.org"></script>
+    <style>
+        :root {
+            --bg: #0b0e11;
+            --card: #1e2329;
+            --accent: #fcd535; /* Золотой цвет звезд */
+            --text: #ffffff;
+            --secondary: #848e9c;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* Header */
+        .header {
+            width: 100%; padding: 20px;
+            background: var(--card);
+            display: flex; align-items: center; justify-content: space-between;
+            box-sizing: border-box;
+        }
+
+        .user-block { display: flex; align-items: center; gap: 10px; }
+        .avatar { width: 40px; height: 40px; border-radius: 12px; background: var(--accent); color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+        /* Balance Section */
+        .balance-section {
+            text-align: center; margin-top: 30px;
+        }
+        .balance-label { color: var(--secondary); font-size: 14px; letter-spacing: 1px; }
+        .balance-value { font-size: 48px; font-weight: 800; margin: 10px 0; color: var(--accent); }
+
+        /* Game Button */
+        .play-area {
+            width: 100%; padding: 20px; box-sizing: border-box;
+        }
+        .main-button {
+            width: 100%; height: 60px; background: var(--accent); color: #000;
+            border: none; border-radius: 16px; font-size: 18px; font-weight: bold;
+            cursor: pointer; transition: 0.2s;
+        }
+        .main-button:active { transform: scale(0.98); }
+
+        /* NFT Inventory */
+        .inventory {
+            width: 100%; padding: 0 20px; box-sizing: border-box;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;
+        }
+        .nft-card {
+            background: var(--card); border-radius: 16px; padding: 15px;
+            text-align: center; border: 1px solid rgba(255,255,255,0.05);
+        }
+        .nft-icon { font-size: 40px; margin-bottom: 10px; }
+        .nft-name { font-size: 14px; font-weight: bold; }
+        .nft-price { font-size: 12px; color: var(--accent); margin-top: 5px; }
+
+        .title-app { font-size: 20px; font-weight: 800; margin-top: 20px; color: var(--accent); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="user-block">
+            <div class="avatar" id="u-avatar">?</div>
+            <div id="u-name">Player</div>
+        </div>
+        <div style="font-size: 12px; border: 1px solid var(--accent); padding: 4px 8px; border-radius: 8px;">NFT STARS 2026</div>
+    </div>
+
+    <div class="title-app">NFT STARS - Playing</div>
+
+    <div class="balance-section">
+        <div class="balance-label">БАЛАНС ЗВЕЗД</div>
+        <div class="balance-value">⭐ <span id="star-count">500</span></div>
+    </div>
+
+    <div class="play-area">
+        <button class="main-button" onclick="getStars()">ПОЛУЧИТЬ ⭐</button>
+    </div>
+
+    <div style="width: 100%; padding-left: 40px; font-weight: bold;">МОИ NFT ПРЕДМЕТЫ</div>
+    
+    <div class="inventory" id="nft-grid">
+        <!-- NFT появятся здесь -->
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        let stars = parseInt(localStorage.getItem('stars_2026')) || 500;
+        let inventory = JSON.parse(localStorage.getItem('inventory_2026')) || [];
+
+        function updateData() {
+            document.getElementById('star-count').innerText = stars;
+            const grid = document.getElementById('nft-grid');
+            
+            if (inventory.length === 0) {
+                grid.innerHTML = '<div style="grid-column: span 2; color: #848e9c; padding: 20px;">Нет NFT. Нажмите кнопку выше!</div>';
+            } else {
+                grid.innerHTML = inventory.map(item => `
+                    <div class="nft-card">
+                        <div class="nft-icon">${item.icon}</div>
+                        <div class="nft-name">${item.name}</div>
+                        <div class="nft-price">#${item.id}</div>
+                    </div>
+                `).join('');
+            }
+            localStorage.setItem('stars_2026', stars);
+            localStorage.setItem('inventory_2026', JSON.stringify(inventory));
+        }
+
+        function getStars() {
+            tg.HapticFeedback.impactOccurred('medium');
+            
+            // Логика: либо даем звезды, либо выпадает NFT за звезды
+            if (Math.random() > 0.7) {
+                const nfts = [
+                    {name: 'Gold Star', icon: '🌟', id: Math.floor(Math.random()*999)},
+                    {name: 'Cyber Punk', icon: '🤖', id: Math.floor(Math.random()*999)},
+                    {name: 'Cosmos NFT', icon: '🚀', id: Math.floor(Math.random()*999)}
+                ];
+                const win = nfts[Math.floor(Math.random()*nfts.length)];
+                inventory.push(win);
+                tg.showAlert(`УРА! Вы получили редкий NFT: ${win.name}`);
+            } else {
+                stars += 10;
+            }
+            updateData();
+        }
+
+        // Загрузка данных пользователя
+        if (tg.initDataUnsafe?.user) {
+            document.getElementById('u-name').innerText = tg.initDataUnsafe.user.first_name;
+            document.getElementById('u-avatar').innerText = tg.initDataUnsafe.user.first_name.charAt(0);
+        }
+
+        updateData();
+    </script>
+</body>
+</html>
