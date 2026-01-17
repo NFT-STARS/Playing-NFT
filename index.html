@@ -3,146 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Progress Mini App 2026</title>
+    <title>NFT Stars Mini App 2026</title>
+    <!-- Подключение SDK Telegram -->
     <script src="https://telegram.org"></script>
     <style>
+        :root {
+            --main-color: #f39c12;
+            --bg-color: #0f0f0f;
+            --card-bg: #1a1a1a;
+        }
+
         body {
-            background-color: #0f0f0f;
+            background-color: var(--bg-color);
             color: white;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             height: 100vh;
             overflow: hidden;
+            -webkit-user-select: none;
         }
 
-        /* 1. ЭКРАН ЗАГРУЗКИ С ПОЛОСКОЙ */
+        /* 1. ЭКРАН ЗАГРУЗКИ (LOADER) */
         #loader {
             position: fixed;
             inset: 0;
-            background: #0f0f0f;
+            background: var(--bg-color);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.5s;
+            z-index: 10000;
+            transition: opacity 0.5s ease;
         }
 
         .progress-container {
             width: 70%;
-            height: 8px;
+            height: 10px;
             background: #222;
             border-radius: 10px;
+            margin: 20px 0;
             overflow: hidden;
-            margin-bottom: 10px;
             border: 1px solid #333;
         }
 
         #progress-bar {
-            width: 0%; /* Начальная ширина */
+            width: 0%;
             height: 100%;
-            background: linear-gradient(90deg, #f39c12, #e67e22);
-            box-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
+            background: linear-gradient(90deg, var(--main-color), #e67e22);
+            box-shadow: 0 0 15px rgba(243, 156, 18, 0.5);
             transition: width 0.1s linear;
         }
 
-        #progress-text {
-            color: #f39c12;
+        #percent-text {
+            font-size: 24px;
             font-weight: bold;
-            font-size: 14px;
-            letter-spacing: 1px;
+            color: var(--main-color);
+            font-family: monospace;
         }
 
-        /* 2. ЭКРАНЫ ПРИЛОЖЕНИЯ */
-        #mainMenu, #gameScreen {
-            display: none;
+        /* 2. ГЛАВНОЕ МЕНЮ И ЭКРАНЫ */
+        .screen {
+            display: none; /* Скрыты по умолчанию */
             flex-direction: column;
             align-items: center;
             justify-content: center;
             width: 100%;
             height: 100%;
+            animation: fadeIn 0.3s ease;
         }
 
-        .menu-btn {
-            width: 80%;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            color: white;
-            padding: 20px;
-            margin: 10px 0;
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Баланс */
+        .balance-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            padding: 8px 15px;
             border-radius: 15px;
+            border: 1px solid var(--main-color);
+            color: var(--main-color);
+            font-weight: bold;
+        }
+
+        /* Кнопки */
+        .btn {
+            width: 80%;
+            max-width: 300px;
+            background: linear-gradient(135deg, var(--main-color), #d35400);
+            border: none;
+            padding: 18px;
+            margin: 10px 0;
+            color: white;
             font-size: 18px;
             font-weight: bold;
+            border-radius: 15px;
             cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
-        .fade-out { opacity: 0; pointer-events: none; }
+        .btn:active { transform: scale(0.96); }
+        .btn:disabled { background: #444; opacity: 0.6; box-shadow: none; }
+
+        .secondary-btn {
+            background: none;
+            border: 1px solid #444;
+            color: #888;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        /* 3. ИГРОВАЯ АНИМАЦИЯ (КЕЙС) */
+        .case-icon { font-size: 100px; margin-bottom: 20px; transition: 0.3s; }
+        
+        .shake { animation: shake-anim 0.5s infinite; }
+        @keyframes shake-anim {
+            0% { transform: rotate(0); }
+            25% { transform: rotate(5deg); }
+            75% { transform: rotate(-5deg); }
+            100% { transform: rotate(0); }
+        }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <!-- Лоадер с полоской прогресса -->
+    <!-- ЭКРАН ЗАГРУЗКИ -->
     <div id="loader">
+        <div id="percent-text">0%</div>
         <div class="progress-container">
             <div id="progress-bar"></div>
         </div>
-        <div id="progress-text">0%</div>
+        <div style="letter-spacing: 3px; font-size: 10px; color: #555;">LOADING SYSTEM...</div>
     </div>
 
-    <!-- Главное меню -->
-    <div id="mainMenu">
-        <h1 style="color: #f39c12;">STARS APP 2026</h1>
-        <button class="menu-btn" onclick="showScreen('gameScreen')">🎮 ИГРАТЬ</button>
-        <button class="menu-btn" onclick="tg.showAlert('Раздел в разработке')">👤 ПРОФИЛЬ</button>
+    <!-- ВИДЖЕТ БАЛАНСА -->
+    <div id="balanceWidget" class="balance-badge hidden">
+        💰 <span id="userBalance">1000</span>
     </div>
 
-    <!-- Экран игры -->
-    <div id="gameScreen">
-        <div style="font-size: 100px; margin-bottom: 20px;">📦</div>
-        <button class="menu-btn" onclick="showScreen('mainMenu')">← НАЗАД</button>
+    <!-- ГЛАВНОЕ МЕНЮ -->
+    <div id="mainMenu" class="screen">
+        <h1 style="color: var(--main-color); margin-bottom: 50px;">NFT STARS 2026</h1>
+        <button class="btn" onclick="goToScreen('gameScreen')">🎮 ИГРАТЬ</button>
+        <button class="btn" onclick="tg.showAlert('Магазин откроется скоро!')" style="background: #222;">🛒 МАГАЗИН</button>
+        <button class="btn" onclick="tg.showAlert('Топ игроков в разработке')" style="background: #222;">🏆 РЕЙТИНГ</button>
+    </div>
+
+    <!-- ЭКРАН ИГРЫ -->
+    <div id="gameScreen" class="screen">
+        <div id="boxEmoji" class="case-icon">📦</div>
+        <h2 id="gameStatus">Готов к открытию?</h2>
+        <p style="color: #666; margin-bottom: 30px;">Цена: 100 монет</p>
+        
+        <button id="openBtn" class="btn" onclick="logicOpenCase()">ОТКРЫТЬ КЕЙС</button>
+        <button class="secondary-btn" onclick="goToScreen('mainMenu')">← В МЕНЮ</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
+        let balance = 1000;
+        const CASE_PRICE = 100;
+
+        // Инициализация
         tg.ready();
         tg.expand();
 
-        function showScreen(screenId) {
-            document.getElementById('mainMenu').style.display = 'none';
-            document.getElementById('gameScreen').style.display = 'none';
-            document.getElementById(screenId).style.display = 'flex';
-        }
-
-        // ЛОГИКА ЗАГРУЗКИ ПОЛОСКОЙ
+        // 1. ЛОГИКА ЗАГРУЗКИ
         function startLoading() {
-            const progressBar = document.getElementById('progress-bar');
-            const progressText = document.getElementById('progress-text');
-            const loader = document.getElementById('loader');
+            let p = 0;
+            const bar = document.getElementById('progress-bar');
+            const pText = document.getElementById('percent-text');
             
-            let width = 0;
-            
-            // Интервал обновления (каждые 30мс)
             const interval = setInterval(() => {
-                if (width >= 100) {
+                p += 2;
+                bar.style.width = p + '%';
+                pText.innerText = p + '%';
+
+                if (p >= 100) {
                     clearInterval(interval);
-                    // Завершение загрузки
+                    document.getElementById('loader').style.opacity = '0';
                     setTimeout(() => {
-                        loader.classList.add('fade-out');
-                        showScreen('mainMenu');
-                    }, 200);
-                } else {
-                    width++; // Увеличиваем процент
-                    progressBar.style.width = width + '%';
-                    progressText.innerText = width + '%';
+                        document.getElementById('loader').style.display = 'none';
+                        document.getElementById('balanceWidget').classList.remove('hidden');
+                        goToScreen('mainMenu');
+                    }, 500);
                 }
-            }, 30); // Скорость загрузки (чем меньше число, тем быстрее)
+            }, 40);
         }
 
-        // Запуск при открытии
+        // 2. НАВИГАЦИЯ
+        function goToScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+            document.getElementById(screenId).style.display = 'flex';
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        // 3. ИГРОВАЯ ЛОГИКА
+        function logicOpenCase() {
+            if (balance < CASE_PRICE) {
+                tg.HapticFeedback.notificationOccurred('error');
+                tg.showAlert("Недостаточно монет! 💰");
+                return;
+            }
+
+            // Списание
+            balance -= CASE_PRICE;
+            document.getElementById('userBalance').innerText = balance;
+            
+            // Анимация
+            const btn = document.getElementById('openBtn');
+            const box = document.getElementById('boxEmoji');
+            const status = document.getElementById('gameStatus');
+
+            btn.disabled = true;
+            box.classList.add('shake');
+            status.innerText = "Открываем...";
+            tg.HapticFeedback.impactOccurred('medium');
+
+            setTimeout(() => {
+                box.classList.remove('shake');
+                
+                const prizes = ['💎 АЛМАЗ', '🔥 NFT APE', '💰 1000 МОНЕТ', '🤡 ТЫКВА', '⭐️ ЗВЕЗДА'];
+                const win = prizes[Math.floor(Math.random() * prizes.length)];
+                
+                box.innerText = "🎁";
+                status.innerText = "ВЫПАЛО: " + win;
+                status.style.color = "#2ecc71";
+                
+                tg.HapticFeedback.notificationOccurred('success');
+                
+                // Кратковременное увеличение приза
+                box.style.transform = "scale(1.3)";
+                setTimeout(() => { 
+                    box.style.transform = "scale(1.0)"; 
+                    btn.disabled = false;
+                }, 500);
+
+            }, 2000);
+        }
+
+        // Запуск при старте
         window.onload = startLoading;
+
     </script>
 </body>
 </html>
