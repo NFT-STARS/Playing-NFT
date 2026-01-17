@@ -14,16 +14,34 @@
         #score { font-size: 50px; font-weight: 900; color: var(--main-color); margin: 0; }
         #profit { color: var(--accent-color); font-size: 18px; font-weight: bold; }
         #game-area { height: 45vh; display: flex; justify-content: center; align-items: center; position: relative; }
+        
+        /* Стили для зуба с руками и ногами (ИЗМЕНЕНО) */
+        #tooth-container {
+            display: flex; flex-direction: column; align-items: center;
+            position: relative; transition: transform 0.1s ease-out;
+        }
         #tooth {
             width: 200px; height: 220px; background: white; border: 8px solid var(--main-color);
             border-radius: 60px; position: relative; cursor: pointer;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: transform 0.05s; z-index: 10;
+            z-index: 10;
         }
+        .limb { position: absolute; background: var(--main-color); border-radius: 5px; }
+        .arm { width: 10px; height: 80px; top: 110px; }
+        .left-arm { left: -20px; transform: rotate(30deg); }
+        .right-arm { right: -20px; transform: rotate(-30deg); }
+        .leg { width: 15px; height: 100px; bottom: -100px; }
+        .left-leg { left: 50px; }
+        .right-leg { right: 50px; }
+
         .eye-row { display: flex; margin-bottom: 10px; }
         .eye { width: 18px; height: 18px; background: var(--main-color); border-radius: 50%; margin: 0 15px; }
         #mouth { width: 40px; height: 8px; border-radius: 10px; background: var(--main-color); transition: 0.1s; }
         
+        /* Анимация приседания (ИЗМЕНЕНО) */
+        .active-squat { transform: translateY(20px) scale(0.95); }
+        .active-squat #mouth { height: 30px; border-radius: 50%; background: #e74c3c; }
+
         #energy-container { 
             width: 80%; margin: 15px auto; background: #dcdde1; 
             height: 25px; border-radius: 15px; overflow: hidden; position: relative; border: 2px solid var(--main-color);
@@ -56,12 +74,11 @@
             border-radius: 12px; font-size: 14px; font-weight: bold; cursor: pointer;
         }
         .shop-btn { background: var(--shop-color); }
-
-        #energy-modal {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: white; border: 3px solid var(--main-color); border-radius: 20px;
-            padding: 20px; z-index: 200; width: 80%; box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        .plus-one {
+            position: absolute; color: var(--accent-color); font-size: 32px; font-weight: bold;
+            pointer-events: none; animation: fly 0.7s ease-out forwards; z-index: 20;
         }
+        @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
     </style>
 </head>
 <body>
@@ -76,11 +93,11 @@
     <div id="top-screen">
         <h2>🏆 РЕЙТИНГ МАСТЕРОВ</h2>
         <div class="top-tabs">
-            <button class="tab-btn active" onclick="changeTab('all')">Все время</button>
+            <button class="tab-btn active" onclick="changeTab('all')">Лучшие за все время</button>
             <button class="tab-btn" onclick="changeTab('week')">Неделя</button>
             <button class="tab-btn" onclick="changeTab('day')">День</button>
         </div>
-        <div id="reset-timer" style="font-size:12px; color:red; margin-bottom:10px;">Сброс через: --:--:--</div>
+        <div id="reset-timer" style="font-size:12px; color:red; margin-bottom:10px;"></div>
         <button class="btn" onclick="toggleTop(false)">НАЗАД</button>
         <table class="top-list" id="leaderboard"></table>
     </div>
@@ -104,13 +121,20 @@
     <div id="ui">
         <div id="profit">Прибыль: +<span id="p-val">0</span>/сек</div>
         <p id="score">0</p>
-        <div style="font-size: 12px; color: #7f8c8d;">Всего добыто (в ТОП): <span id="total-val">0</span></div>
+        <!-- Убрана надпись "Всего добыто в топ" -->
     </div>
 
     <div id="game-area">
-        <div id="tooth">
-            <div class="eye-row"><div class="eye"></div><div class="eye"></div></div>
-            <div id="mouth"></div>
+        <!-- Контейнер для зуба с конечностями -->
+        <div id="tooth-container">
+            <div id="tooth">
+                <div class="eye-row"><div class="eye"></div><div class="eye"></div></div>
+                <div id="mouth"></div>
+            </div>
+            <div class="limb arm left-arm"></div>
+            <div class="limb arm right-arm"></div>
+            <div class="limb leg left-leg"></div>
+            <div class="limb leg right-leg"></div>
         </div>
     </div>
 
@@ -126,14 +150,10 @@
     </div>
 
     <script>
-        // БАЛАНС (тратится в магазине)
         let balance = parseFloat(localStorage.getItem('z_balance')) || 0;
-        
-        // РЕЙТИНГ (не тратится, копится)
         let scoreTotal = parseFloat(localStorage.getItem('z_sc_total')) || 0;
         let scoreDay = parseFloat(localStorage.getItem('z_sc_d')) || 0;
         let scoreWeek = parseFloat(localStorage.getItem('z_sc_w')) || 0;
-        
         let profit = parseInt(localStorage.getItem('z_pr')) || 0;
         let cost = parseInt(localStorage.getItem('z_co')) || 50;
         let energy = parseInt(localStorage.getItem('z_en')) ?? 50;
@@ -151,9 +171,12 @@
         let secondsPassed = Math.floor((Date.now() - lastSave) / 1000);
         energy = Math.min(maxEnergy, energy + Math.floor(secondsPassed / restoreTime));
 
+        const scoreEl = document.getElementById('score');
+        const toothContainer = document.getElementById('tooth-container');
+        let currentTab = 'all';
+
         function updateUI() {
             document.getElementById('score').innerText = Math.floor(balance).toLocaleString();
-            document.getElementById('total-val').innerText = Math.floor(scoreTotal).toLocaleString();
             document.getElementById('p-val').innerText = profit;
             document.getElementById('cost').innerText = cost;
             document.getElementById('e-num').innerText = Math.floor(energy);
@@ -171,17 +194,21 @@
                 let diff = Math.max(0, Math.floor((target - Date.now()) / 1000));
                 let h = Math.floor(diff / 3600), m = Math.floor((diff % 3600) / 60), s = diff % 60;
                 document.getElementById('reset-timer').innerText = `Сброс через: ${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
-            } else { document.getElementById('reset-timer').innerText = "Вечный рейтинг"; }
+            } else { document.getElementById('reset-timer').innerText = "Лучшие игроки за все время"; }
         }
 
         function tap(e) {
             if (energy >= 1) {
-                // Добавляем и в кошелек, и в статистику
                 balance += 1; scoreTotal += 1; scoreDay += 1; scoreWeek += 1;
                 energy -= 1;
-                document.getElementById('tooth').classList.add('active');
-                setTimeout(() => document.getElementById('tooth').classList.remove('active'), 100);
-                updateUI(); save();
+                
+                // Анимация приседания
+                toothContainer.classList.add('active-squat');
+                setTimeout(() => toothContainer.classList.remove('active-squat'), 100);
+
+                const x = e.touches ? e.touches.clientX : e.clientX;
+                const y = e.touches ? e.touches.clientY : e.clientY;
+                createPlus(x, y); updateUI(); save();
             } else { document.getElementById('energy-modal').style.display = 'block'; }
         }
 
@@ -209,19 +236,23 @@
                 </tr>`).join('');
         }
 
+        function createPlus(x, y) {
+            const p = document.createElement('div');
+            p.className = 'plus-one'; p.innerText = '+1';
+            p.style.left = x + 'px'; p.style.top = y + 'px';
+            document.body.appendChild(p); setTimeout(() => p.remove(), 700);
+        }
+
         function buyEnergy(a, p) {
             if (balance >= p) { 
-                balance -= p; // Уменьшаем только баланс
-                energy = Math.min(maxEnergy, energy + a); 
+                balance -= p; energy = Math.min(maxEnergy, energy + a); 
                 updateUI(); save(); 
-            } else { alert("Мало монет на балансе!"); }
+            }
         }
 
         function buyUpgrade() {
             if (balance >= cost) { 
-                balance -= cost; // Уменьшаем только баланс
-                profit += 1; 
-                cost = Math.floor(cost * 1.6); 
+                balance -= cost; profit += 1; cost = Math.floor(cost * 1.6); 
                 updateUI(); save(); 
             }
         }
@@ -255,7 +286,7 @@
         }
         setInterval(save, 2000);
 
-        document.getElementById('tooth').addEventListener('mousedown', tap);
+        document.getElementById('tooth-container').addEventListener('mousedown', tap);
         updateUI();
     </script>
 </body>
