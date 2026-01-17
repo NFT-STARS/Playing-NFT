@@ -105,25 +105,31 @@
         }
 
         function tryOpenCase() {
-    // 1. Находим кнопку в памяти браузера по её ID
     const btn = document.getElementById('mainBtn');
+    const balanceText = document.getElementById('balanceDisplay');
 
-    // 2. Проверяем баланс (значение balance мы задали выше)
+    // 1. ПРОВЕРКА: Хватает ли монет на балансе?
     if (balance >= 100) {
-        // 3. Сразу отключаем кнопку, чтобы пользователь не нажал её 10 раз подряд
-        btn.disabled = true; 
         
-        // 4. Списываем валюту
-        balance -= 100;
-        updateBalanceDisplay(); // Обновляем цифру на экране
+        // 2. СПИСАНИЕ: Вычитаем стоимость из переменной balance
+        balance = balance - 100; 
 
-        // 5. Запускаем анимацию открытия (тряску)
-        runOpenAnimation(); 
+        // 3. ОБНОВЛЕНИЕ ЭКРАНА: Сразу записываем новое число в текст баланса
+        balanceText.innerText = balance;
+
+        // 4. ВИЗУАЛ: Блокируем кнопку и запускаем анимацию
+        btn.disabled = true;
+        tg.HapticFeedback.impactOccurred('medium'); // Вибрация нажатия
+        
+        runOpenAnimation(); // Вызываем функцию с тряской кейса
+
     } else {
-        // Если денег нет, выводим сообщение через SDK Telegram
-        window.Telegram.WebApp.showAlert("Недостаточно монет!");
+        // Если монет меньше 100
+        tg.HapticFeedback.notificationOccurred('error'); // Вибрация ошибки
+        tg.showAlert("У вас недостаточно монет для открытия!");
     }
 }
+
 
 
         function runOpenAnimation() {
