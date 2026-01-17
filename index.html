@@ -16,19 +16,19 @@
 
         /* ТОП Элементы */
         .top-item { display: flex; align-items: center; padding: 10px; margin: 5px auto; width: 90%; border-radius: 12px; background: #fff; border: 2px solid #ddd; }
-        .rank-1 { border-color: #FFD700; background: #fffdf0; box-shadow: 0 0 10px #FFD70055; }
-        .rank-2 { border-color: #C0C0C0; background: #f8f8f8; }
-        .rank-3 { border-color: #CD7F32; background: #fff5ed; }
+        .rank-1 { border: 3px solid #FFD700 !important; background: #fffdf0 !important; box-shadow: 0 0 10px #FFD70055; }
+        .rank-2 { border: 3px solid #C0C0C0 !important; background: #f8f8f8 !important; }
+        .rank-3 { border: 3px solid #CD7F32 !important; background: #fff5ed !important; }
         
         .medal-circle { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; margin-right: 10px; }
         .m-1 { background: linear-gradient(#FFD700, #DAA520); border: 2px solid #fff; }
         .m-2 { background: linear-gradient(#C0C0C0, #808080); border: 2px solid #fff; }
         .m-3 { background: linear-gradient(#CD7F32, #A0522D); border: 2px solid #fff; }
-        .reward-tag { margin-left: auto; color: var(--dia-color); font-weight: bold; font-size: 14px; background: #e0faff; padding: 2px 8px; border-radius: 10px; }
+        .reward-tag { margin-left: auto; color: var(--dia-color); font-weight: bold; font-size: 13px; background: #e0faff; padding: 2px 6px; border-radius: 8px; }
 
         /* Персонаж */
-        #game-area { height: 40vh; display: flex; justify-content: center; align-items: center; position: relative; }
-        #tooth-container { width: 160px; height: 180px; position: relative; transition: transform 0.1s; cursor: pointer; }
+        #game-area { height: 40vh; display: flex; justify-content: center; align-items: center; position: relative; margin-top: 20px; }
+        #tooth-container { width: 160px; height: 180px; position: relative; transition: transform 0.1s; cursor: pointer; user-select: none; }
         #tooth { width: 100%; height: 100%; background: white; border: 6px solid #dcdde1; border-radius: 40% 40% 50% 50% / 20% 20% 80% 80%; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; z-index: 11; }
         .limb { position: absolute; background: #f1f2f6; border: 4px solid #dcdde1; border-radius: 20px; }
         .arm { width: 12px; height: 50px; top: 70px; }
@@ -38,14 +38,11 @@
         .left-leg { left: 30px; } .right-leg { right: 30px; }
         .active-squat { transform: scale(0.9, 0.8) translateY(15px); }
 
-        /* Экраны */
         .screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 200; background: white; padding-top: 20px; overflow-y: auto; }
-        
-        /* Кнопки */
-        .btn { background: var(--main-color); color: white; border: none; padding: 10px 15px; border-radius: 12px; font-weight: bold; cursor: pointer; }
-        .buy-energy-btn { display: none; background: #e67e22; margin-top: 10px; width: 80%; }
+        .btn { background: var(--main-color); color: white; border: none; padding: 10px 15px; border-radius: 12px; font-weight: bold; cursor: pointer; outline: none; }
+        .buy-energy-btn { display: none; background: #e67e22; width: 80%; margin: 10px auto; }
 
-        .nav-bar { display: flex; gap: 10px; padding: 15px; position: fixed; bottom: 0; width: 100%; box-sizing: border-box; background: white; }
+        .nav-bar { display: flex; gap: 10px; padding: 15px; position: fixed; bottom: 0; width: 100%; box-sizing: border-box; background: white; border-top: 1px solid #ddd; }
     </style>
 </head>
 <body>
@@ -54,12 +51,12 @@
     <button class="btn" style="position:fixed; top:15px; left:15px; z-index:110;" onclick="toggleScreen('top-screen', true)">🏆 ТОП</button>
 
     <div id="top-screen" class="screen">
-        <h2 id="top-title">🏆 РЕЙТИНГ</h2>
+        <h2 id="top-title">🏆 РЕЙТИНГ 2026</h2>
         <div id="top-timer" style="color: #e74c3c; font-weight: bold; margin-bottom: 10px;"></div>
         <div style="display:flex; justify-content:center; gap:5px; margin-bottom:15px;">
             <button class="btn" onclick="changeTab('day')">День</button>
             <button class="btn" onclick="changeTab('week')">Неделя</button>
-            <button class="btn" onclick="changeTab('all')">Все время</button>
+            <button class="btn" onclick="changeTab('all')">Постоянный</button>
         </div>
         <div id="leaderboard"></div>
         <button class="btn" onclick="toggleScreen('top-screen', false)" style="background:#e74c3c; margin: 20px;">ЗАКРЫТЬ</button>
@@ -71,7 +68,7 @@
     </div>
 
     <div id="game-area">
-        <div id="tooth-container" onmousedown="tap(event)" ontouchstart="tap(event)">
+        <div id="tooth-container" onclick="tap(event)">
             <div id="tooth">
                 <div style="display:flex; margin-bottom:10px;">
                     <div style="width:15px; height:15px; background:#2c3e50; border-radius:50%; margin:0 10px;"></div>
@@ -87,7 +84,7 @@
     <div style="width:85%; margin:20px auto;">
         <div id="energy-container" style="background:#dcdde1; height:30px; border-radius:15px; overflow:hidden; border:2px solid #333; position:relative;">
             <div id="energy-bar" style="width:100%; height:100%; background:var(--accent-color); transition:0.3s;"></div>
-            <div id="energy-info" style="position:absolute; width:100%; top:5px; font-weight:bold; font-size:14px; text-shadow: 0 0 2px white;">
+            <div id="energy-info" style="position:absolute; width:100%; top:5px; font-weight:bold; font-size:14px;">
                 ⚡ <span id="e-num">100</span> / 100 (<span id="e-timer">05:00</span>)
             </div>
         </div>
@@ -96,7 +93,7 @@
 
     <div class="nav-bar">
         <button class="btn" onclick="buyUpgrade()" style="flex:1">УЛУЧШИТЬ (<span id="cost">50</span>)</button>
-        <button class="btn" style="flex:1; background:var(--shop-color)" onclick="alert('Скоро!')">ИНВЕНТАРЬ</button>
+        <button class="btn" style="flex:1; background:var(--shop-color)" onclick="alert('Инвентарь пуст')">ИНВЕНТАРЬ</button>
     </div>
 
     <script>
@@ -104,12 +101,11 @@
         let diamonds = parseInt(localStorage.getItem('z_dia')) || 0;
         let profit = parseFloat(localStorage.getItem('z_pr')) || 1;
         let cost = parseInt(localStorage.getItem('z_co')) || 50;
-        
         let energy = parseFloat(localStorage.getItem('z_ene')) ?? 100;
         let lastUpdate = parseInt(localStorage.getItem('z_time')) || Date.now();
         
         const maxEnergy = 100;
-        const regenTime = 5 * 60 * 1000; // 5 минут в мс
+        const regenTime = 5 * 60 * 1000; // 5 минут
         let currentTab = 'day';
 
         function updateUI() {
@@ -119,7 +115,7 @@
             document.getElementById('cost').innerText = cost;
             document.getElementById('e-num').innerText = Math.floor(energy);
             document.getElementById('energy-bar').style.width = (energy / maxEnergy * 100) + '%';
-            document.getElementById('buy-energy').style.display = energy < 1 ? 'inline-block' : 'none';
+            document.getElementById('buy-energy').style.display = energy < 1 ? 'block' : 'none';
             
             localStorage.setItem('z_bal', balance);
             localStorage.setItem('z_ene', energy);
@@ -130,7 +126,6 @@
         }
 
         function tap(e) {
-            if (e) e.preventDefault();
             if (energy >= 1) {
                 balance += profit;
                 energy -= 1;
@@ -160,35 +155,37 @@
 
         function renderLeaderboard() {
             const container = document.getElementById('leaderboard');
-            const rewards = { day: [10, 5, 2], week: [100, 50, 20], all: [0, 0, 0] };
+            const rewards = {
+                day: [10, 5, 2, 0, 0],
+                week: [100, 50, 20, 0, 0],
+                all: [0, 0, 0, 0, 0]
+            };
             let html = '';
-            const names = ["Зубной Король", "Улыбка2026", "Дентист-Про", "Игрок_4", "Вы"];
+            const names = ["Зубной Король", "Улыбка2026", "Дентист-Про", "Игрок_4", "Вы (игрок)"];
             const scores = [50000, 25000, 10000, 5000, Math.floor(balance)];
 
             names.forEach((name, i) => {
                 let rankClass = i < 3 ? `rank-${i+1}` : '';
-                let medal = i < 3 ? `<div class="medal-circle m-${i+1}">${i+1}</div>` : `<div style="width:40px">${i+1}</div>`;
-                let reward = rewards[currentTab][i] ? `<div class="reward-tag">+${rewards[currentTab][i]} 💎</div>` : '';
+                let medal = i < 3 ? `<div class="medal-circle m-${i+1}">${i+1}</div>` : `<div style="width:40px; font-weight:bold;">${i+1}</div>`;
+                let rewardText = (rewards[currentTab][i] > 0) ? `<div class="reward-tag">+${rewards[currentTab][i]} 💎</div>` : '';
                 
-                html += `<div class="top-item ${rankClass}">${medal} <b>${name}</b> <span style="margin-left:10px">${scores[i]}</span> ${reward}</div>`;
+                html += `<div class="top-item ${rankClass}">${medal} <b>${name}</b> <span style="margin-left:10px">${scores[i]}</span> ${rewardText}</div>`;
             });
             container.innerHTML = html;
         }
 
         function processRegen() {
             const now = Date.now();
-            const elapsed = now - lastUpdate;
-            
             if (energy < maxEnergy) {
-                const gained = elapsed / regenTime;
+                const elapsed = now - lastUpdate;
+                const gained = Math.floor(elapsed / regenTime);
                 if (gained >= 1) {
-                    energy = Math.min(maxEnergy, energy + Math.floor(gained));
+                    energy = Math.min(maxEnergy, energy + gained);
                     lastUpdate = now - (elapsed % regenTime);
                 }
-                
-                const nextSec = Math.ceil((regenTime - (now - lastUpdate)) / 1000);
-                const m = Math.floor(nextSec / 60);
-                const s = nextSec % 60;
+                const remaining = regenTime - (now - lastUpdate);
+                const m = Math.floor(remaining / 60000);
+                const s = Math.floor((remaining % 60000) / 1000);
                 document.getElementById('e-timer').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
             } else {
                 document.getElementById('e-timer').innerText = "MAX";
@@ -212,9 +209,9 @@
                 const h = Math.floor(diff / 3600000);
                 const m = Math.floor((diff % 3600000) / 60000);
                 const s = Math.floor((diff % 60000) / 1000);
-                document.getElementById('top-timer').innerText = `Сброс через: ${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                document.getElementById('top-timer').innerText = `Обнуление: ${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
             } else {
-                document.getElementById('top-timer').innerText = "Постоянный рекорд";
+                document.getElementById('top-timer').innerText = "Постоянный рейтинг";
             }
         }
 
@@ -223,4 +220,3 @@
     </script>
 </body>
 </html>
-``` [1] [2] [3]
