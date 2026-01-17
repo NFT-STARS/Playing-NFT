@@ -75,14 +75,18 @@
     <button id="shop-btn" onclick="buyUpgrade()">УЛУЧШИТЬ (+1/сек) — <span id="cost">50</span> 💰</button>
 
     <script>
+        // Загрузка данных (теперь включая энергию)
         let score = parseInt(localStorage.getItem('z_sc')) || 0;
         let profit = parseInt(localStorage.getItem('z_pr')) || 0;
         let cost = parseInt(localStorage.getItem('z_co')) || 50;
         
-        let energy = 50;
+        // Читаем сохраненную энергию или ставим 50, если данных нет
+        let energy = parseFloat(localStorage.getItem('z_en')) ?? 50; 
         const maxEnergy = 50;
-        const restoreTime = 300; // 5 минут в секундах (5 * 60)
-        let currentTimer = restoreTime; // Таймер для +1 ед.
+        const restoreTime = 300; // 5 минут
+        
+        // Читаем время последнего захода, чтобы восстановить энергию за время отсутствия (опционально, сейчас просто сохраняем текущий таймер)
+        let currentTimer = parseFloat(localStorage.getItem('z_tm')) || restoreTime;
 
         const scoreEl = document.getElementById('score');
         const profitEl = document.getElementById('p-val');
@@ -118,6 +122,7 @@
                 const y = e.touches ? e.touches[0].clientY : e.clientY;
                 createPlus(x, y);
                 updateUI();
+                save(); // Сохраняем сразу после клика
             }
         }
 
@@ -139,15 +144,15 @@
             }
         }
 
-        // Цикл игры (10 раз в секунду)
         setInterval(() => {
             score += profit / 10; 
             
             if (energy < maxEnergy) {
-                currentTimer -= 0.1; // Уменьшаем таймер
+                currentTimer -= 0.1;
                 if (currentTimer <= 0) {
                     energy += 1;
-                    currentTimer = restoreTime; // Сброс на 5 минут
+                    currentTimer = restoreTime;
+                    save(); // Сохраняем при восстановлении ед. энергии
                 }
             } else {
                 currentTimer = restoreTime;
@@ -160,6 +165,8 @@
             localStorage.setItem('z_sc', score);
             localStorage.setItem('z_pr', profit);
             localStorage.setItem('z_co', cost);
+            localStorage.setItem('z_en', energy); // Сохранение текущей энергии
+            localStorage.setItem('z_tm', currentTimer); // Сохранение таймера
         }
         setInterval(save, 3000);
 
