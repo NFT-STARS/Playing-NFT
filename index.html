@@ -6,38 +6,17 @@
     <title>Зуб-Тапер 2026</title>
     <style>
         :root { --main-color: #2c3e50; --accent-color: #27ae60; --shop-color: #9b59b6; --dia-color: #00d2ff; }
-        body { 
-            margin: 0; background: linear-gradient(180deg, #e0f0ff 0%, #ffffff 100%); 
-            font-family: 'Segoe UI', sans-serif; text-align: center; overflow: hidden; touch-action: none; 
-        }
-        
-        /* Деревянная доска */
-        .wood-board {
-            background: linear-gradient(45deg, #5D2E0A, #8B4513);
-            border: 4px solid #3E1F07; border-radius: 10px;
-            color: #FFD700; display: inline-block; padding: 5px 20px;
-            margin-top: 10px; box-shadow: 0 4px 0 #3E1F07;
-            font-weight: bold; font-family: 'Georgia', serif;
-        }
-
+        body { margin: 0; background: linear-gradient(180deg, #e0f0ff 0%, #ffffff 100%); font-family: 'Segoe UI', sans-serif; text-align: center; overflow: hidden; touch-action: none; }
+        .wood-board { background: linear-gradient(45deg, #5D2E0A, #8B4513); border: 4px solid #3E1F07; border-radius: 10px; color: #FFD700; display: inline-block; padding: 5px 20px; margin-top: 10px; box-shadow: 0 4px 0 #3E1F07; font-weight: bold; }
         #ui { padding-top: 20px; position: relative; }
         #score { font-size: 50px; font-weight: 900; color: var(--main-color); margin: 0; }
-        
-        .dia-container {
-            position: absolute; top: 10px; right: 10px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 5px 12px; border-radius: 20px;
-            border: 2px solid var(--dia-color);
-            color: var(--dia-color); font-weight: bold; z-index: 100;
-        }
-
+        .dia-container { position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.9); padding: 5px 12px; border-radius: 20px; border: 2px solid var(--dia-color); color: var(--dia-color); font-weight: bold; z-index: 100; }
+        .top-corner-btn { position: fixed; top: 15px; left: 15px; z-index: 110; width: 60px; height: 60px; }
+        .shop-corner-btn { position: fixed; bottom: 15px; left: 15px; z-index: 110; width: 70px; height: 70px; background: var(--shop-color) !important; }
+        .shop-corner-btn::before { content: "🧺"; display: block; font-size: 24px; }
         #game-area { height: 40vh; display: flex; justify-content: center; align-items: center; position: relative; }
         #tooth-container { width: 180px; height: 200px; position: relative; transition: transform 0.1s; cursor: pointer; z-index: 10; }
-        #tooth {
-            width: 100%; height: 100%; background: white; border: 8px solid var(--main-color);
-            border-radius: 60px; display: flex; flex-direction: column; 
-            justify-content: center; align-items: center; position: relative; z-index: 11;
-        }
+        #tooth { width: 100%; height: 100%; background: white; border: 8px solid var(--main-color); border-radius: 60px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; z-index: 11; }
         .limb { position: absolute; background: var(--main-color); border-radius: 10px; z-index: 5; }
         .arm { width: 12px; height: 60px; top: 80px; }
         .left-arm { left: -25px; transform: rotate(20deg); }
@@ -45,80 +24,52 @@
         .leg { width: 20px; height: 50px; bottom: -30px; }
         .left-leg { left: 40px; }
         .right-leg { right: 40px; }
-
         .eye-row { display: flex; margin-bottom: 10px; }
         .eye { width: 18px; height: 18px; background: var(--main-color); border-radius: 50%; margin: 0 15px; }
         #mouth { width: 40px; height: 8px; border-radius: 10px; background: var(--main-color); transition: 0.1s; }
-        
         .active-squat { transform: scale(0.9) translateY(20px); }
-        .active-squat #mouth { height: 25px; border-radius: 50%; background: #e74c3c; }
-
         #energy-container { width: 80%; margin: 15px auto; background: #dcdde1; height: 25px; border-radius: 15px; overflow: hidden; position: relative; border: 2px solid var(--main-color); }
         #energy-bar { width: 100%; height: 100%; background: var(--accent-color); transition: width 0.3s; }
         #energy-info { position: absolute; width: 100%; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; color: var(--main-color); font-size: 14px; pointer-events: none; z-index: 20; }
-
-        /* ФОНЫ ЭКРАНОВ */
-        #top-screen, #shop-screen, #inv-screen { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            z-index: 100; overflow-y: auto; padding-top: 20px;
-        }
+        #top-screen, #shop-screen, #inv-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 200; overflow-y: auto; padding-top: 20px; }
         #top-screen { background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%); }
         #shop-screen { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
         #inv-screen { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
-
         .top-list { width: 95%; margin: 0 auto; border-collapse: separate; border-spacing: 0 8px; }
-        .reward-col { font-weight: bold; color: var(--dia-color); text-shadow: 0 0 5px rgba(0,0,0,0.1); width: 60px; }
-
-        .nav-bar { display: flex; justify-content: space-around; padding: 10px; gap: 5px; flex-wrap: wrap; }
+        .reward-col { font-weight: bold; color: var(--dia-color); width: 80px; font-size: 11px; text-align: right; }
+        .nav-bar { display: flex; justify-content: center; padding: 10px; gap: 10px; }
         .btn { background: var(--main-color); color: white; border: none; padding: 10px 15px; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.2); }
-        
-        /* Кнопка Сундук */
-        .chest-btn {
-            background: #cd7f32; background: linear-gradient(#8b4513, #cd7f32);
-            border: 2px solid #5d2e0a; position: relative;
-        }
-        .chest-btn::before { content: "📦"; display: block; font-size: 20px; }
-
+        .chest-btn { background: linear-gradient(#8b4513, #cd7f32); border: 2px solid #5d2e0a; }
+        .inv-item { background: white; margin: 10px; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 0 #ddd; }
         .plus-one { position: absolute; color: var(--accent-color); font-size: 32px; font-weight: bold; pointer-events: none; animation: fly 0.7s ease-out forwards; z-index: 50; }
         @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
     </style>
 </head>
 <body>
-
     <div class="dia-container">💎 <span id="dia-val">0</span></div>
+    <button class="btn top-corner-btn" onclick="toggleScreen('top-screen', true)">🏆<br>ТОП</button>
+    <button class="btn shop-corner-btn" onclick="toggleScreen('shop-screen', true)">ШОП</button>
 
-    <!-- ТОП -->
     <div id="top-screen">
-        <h2 style="color: #5d2e0a;">🏆 ЛУЧШИЕ ИГРОКИ 2026</h2>
-        <div id="reset-timer" style="font-size:12px; font-weight:bold; color:#e74c3c; margin-bottom:10px;"></div>
+        <h2 style="color: #5d2e0a;">🏆 РЕЙТИНГ МАСТЕРОВ</h2>
+        <div id="reset-timer" style="font-size:14px; font-weight:bold; color:#e74c3c; margin-bottom:10px;"></div>
         <div style="display:flex; justify-content:center; gap:5px; margin-bottom:10px;">
-            <button class="btn" onclick="changeTab('all', event)">За всё время</button>
-            <button class="btn" onclick="changeTab('week', event)">Неделя</button>
+            <button class="btn" onclick="changeTab('all')">Все время</button>
+            <button class="btn" onclick="changeTab('week')">Неделя</button>
+            <button class="btn" onclick="changeTab('day')">День</button>
         </div>
         <button class="btn" onclick="toggleScreen('top-screen', false)" style="background:#e74c3c">ЗАКРЫТЬ</button>
         <table class="top-list" id="leaderboard"></table>
     </div>
 
-    <!-- МАГАЗИН -->
     <div id="shop-screen">
-        <h2>⚡ МАГАЗИН БУСТЕРОВ</h2>
-        <p>Ваши алмазы: 💎 <span id="shop-diamonds">0</span></p>
-        <div style="padding:20px;">
-            <div style="background:rgba(255,255,255,0.2); padding:15px; border-radius:15px; margin-bottom:10px;">
-                <p>Тут будут бустеры за 💎</p>
-            </div>
-            <button class="btn shop-btn" onclick="buyEnergy(50, 350)" style="width:100%; margin-bottom:10px;">FULL Энергия (350 💰)</button>
-        </div>
+        <h2>⚡ КОРЗИНКА ПОКУПОК</h2>
         <button class="btn" onclick="toggleScreen('shop-screen', false)">НАЗАД</button>
     </div>
 
-    <!-- ИНВЕНТАРЬ -->
     <div id="inv-screen">
-        <h2>🎒 ВАШ ИНВЕНТАРЬ</h2>
-        <p>Ваши предметы и усиления</p>
-        <div style="min-height: 200px; display:flex; justify-content:center; align-items:center; border: 2px dashed #999; margin: 20px; border-radius: 20px;">
-            <p style="color:#777">Пока пусто...</p>
-        </div>
+        <h2>🎒 ИНВЕНТАРЬ</h2>
+        <div id="inventory-list"></div>
         <button class="btn" onclick="toggleScreen('inv-screen', false)">ЗАКРЫТЬ</button>
     </div>
 
@@ -133,10 +84,7 @@
                 <div class="eye-row"><div class="eye"></div><div class="eye"></div></div>
                 <div id="mouth"></div>
             </div>
-            <div class="limb arm left-arm"></div>
-            <div class="limb arm right-arm"></div>
-            <div class="limb leg left-leg"></div>
-            <div class="limb leg right-leg"></div>
+            <div class="limb arm left-arm"></div><div class="limb arm right-arm"></div><div class="limb leg left-leg"></div><div class="limb leg right-leg"></div>
         </div>
     </div>
 
@@ -146,38 +94,50 @@
     </div>
 
     <div class="nav-bar">
-        <button class="btn" onclick="buyUpgrade()">УЛУЧШИТЬ (<span id="cost">50</span>)</button>
-        <button class="btn chest-btn" onclick="toggleScreen('inv-screen', true)">ИНВЕНТАРЬ</button>
-        <button class="btn" style="background:#f1c40f; color:black;" onclick="toggleScreen('top-screen', true)">🏆 ТОП</button>
-        <button class="btn shop-btn" onclick="toggleScreen('shop-screen', true)">⚡ ШОП</button>
+        <button class="btn" onclick="buyUpgrade()" style="flex:1">УЛУЧШИТЬ (<span id="cost">50</span>)</button>
+        <button class="btn chest-btn" onclick="toggleScreen('inv-screen', true)" style="flex:1">ИНВЕНТАРЬ</button>
     </div>
 
     <script>
         let balance = parseFloat(localStorage.getItem('z_balance')) || 0;
         let diamonds = parseInt(localStorage.getItem('z_dia')) || 0;
         let scoreTotal = parseFloat(localStorage.getItem('z_sc_total')) || 0;
+        let scoreDay = parseFloat(localStorage.getItem('z_sc_d')) || 0;
         let scoreWeek = parseFloat(localStorage.getItem('z_sc_w')) || 0;
         let profit = parseFloat(localStorage.getItem('z_pr')) || 0;
         let cost = parseInt(localStorage.getItem('z_co')) || 50;
         let energy = parseInt(localStorage.getItem('z_en')) ?? 50;
+        let inventory = JSON.parse(localStorage.getItem('z_inv')) || [];
+        
+        let dayReset = parseInt(localStorage.getItem('z_dr')) || (Date.now() + 86400000);
         let weekReset = parseInt(localStorage.getItem('z_wr')) || (Date.now() + 604800000);
 
+        // АВТО-ВЫДАЧА НАГРАД (2026)
+        if (Date.now() > dayReset) {
+            let rank = 1; // Симуляция: игрок в топе
+            let reward = rank === 1 ? 10000 : rank === 2 ? 5000 : rank === 3 ? 2000 : rank <= 10 ? 1000 : 0;
+            if(reward > 0) inventory.push({name: "Награда дня", val: reward, type: "coins"});
+            scoreDay = 0; dayReset = Date.now() + 86400000;
+            save();
+        }
         if (Date.now() > weekReset) {
-            diamonds += 50; scoreWeek = 0; weekReset = Date.now() + 604800000;
+            let rank = 1;
+            let diaReward = rank === 1 ? 50 : rank === 2 ? 40 : rank === 3 ? 30 : rank <= 10 ? 10 : 0;
+            if(diaReward > 0) inventory.push({name: "Награда недели", val: diaReward, type: "dia"});
+            scoreWeek = 0; weekReset = Date.now() + 604800000;
+            save();
         }
 
         const maxEnergy = 50, restoreTime = 300;
         let lastSave = parseInt(localStorage.getItem('z_ls')) || Date.now();
         let currentTimer = parseFloat(localStorage.getItem('z_tm')) || restoreTime;
-        let secondsPassed = Math.floor((Date.now() - lastSave) / 1000);
-        energy = Math.min(maxEnergy, energy + Math.floor(secondsPassed / restoreTime));
+        energy = Math.min(maxEnergy, energy + Math.floor((Date.now() - lastSave) / 1000 / restoreTime));
 
         let currentTab = 'all';
 
         function updateUI() {
             document.getElementById('score').innerText = Math.floor(balance).toLocaleString();
             document.getElementById('dia-val').innerText = diamonds;
-            document.getElementById('shop-diamonds').innerText = diamonds;
             document.getElementById('p-val').innerText = profit.toFixed(1);
             document.getElementById('cost').innerText = cost;
             document.getElementById('e-num').innerText = Math.floor(energy);
@@ -188,20 +148,23 @@
                 document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
             } else { document.getElementById('timer').innerText = "FULL"; }
 
-            let diff = Math.max(0, Math.floor((weekReset - Date.now()) / 1000));
-            let d = Math.floor(diff / 86400), h = Math.floor((diff % 86400) / 3600);
-            document.getElementById('reset-timer').innerText = `Сброс через: ${d}д ${h}ч`;
+            const timerDisp = document.getElementById('reset-timer');
+            if (currentTab === 'all') timerDisp.innerText = "Лучшие игроки за всё время";
+            else {
+                let diff = Math.max(0, Math.floor(((currentTab === 'day' ? dayReset : weekReset) - Date.now()) / 1000));
+                let h = Math.floor(diff / 3600), m = Math.floor((diff % 3600) / 60), s = diff % 60;
+                timerDisp.innerText = `Сброс через: ${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+            }
         }
 
         function tap(e) {
             if (e.type === 'touchstart') e.preventDefault();
             if (energy >= 1) {
-                balance += 1; scoreTotal += 1; scoreWeek += 1; energy -= 1;
+                balance += 1; scoreTotal += 1; scoreDay += 1; scoreWeek += 1; energy -= 1;
                 document.getElementById('tooth-container').classList.add('active-squat');
                 setTimeout(() => document.getElementById('tooth-container').classList.remove('active-squat'), 100);
-                const cx = e.touches ? e.touches.clientX : e.clientX;
-                const cy = e.touches ? e.touches.clientY : e.clientY;
-                createPlus(cx, cy); updateUI(); save();
+                createPlus(e.touches ? e.touches[0].clientX : e.clientX, e.touches ? e.touches[0].clientY : e.clientY);
+                updateUI();
             }
         }
 
@@ -211,60 +174,55 @@
             document.body.appendChild(p); setTimeout(() => p.remove(), 700);
         }
 
+        function renderInventory() {
+            const list = document.getElementById('inventory-list');
+            list.innerHTML = inventory.length ? inventory.map((item, i) => `
+                <div class="inv-item">
+                    <span>${item.name}: <b>${item.val}${item.type === 'coins' ? '💰' : '💎'}</b></span>
+                    <button class="btn" onclick="claimItem(${i})" style="background:var(--accent-color)">ВЗЯТЬ</button>
+                </div>
+            `).join('') : '<p style="padding:20px; color:#777">Пока нет наград за ТОП</p>';
+        }
+
+        function claimItem(i) {
+            const item = inventory[i];
+            if(item.type === 'coins') balance += item.val; else diamonds += item.val;
+            inventory.splice(i, 1);
+            save(); updateUI(); renderInventory();
+        }
+
         function renderTop() {
-            let val = currentTab === 'week' ? scoreWeek : scoreTotal;
-            let players = [{name: "Вы", score: Math.floor(val)}, {name: "Зубастик", score: 10000}, {name: "Tapper", score: 5000}];
+            let val = currentTab === 'day' ? scoreDay : currentTab === 'week' ? scoreWeek : scoreTotal;
+            let players = [{name: "Вы", score: Math.floor(val)}, {name: "Bot1", score: 1000}, {name: "Bot2", score: 500}];
             players.sort((a, b) => b.score - a.score);
-            
             document.getElementById('leaderboard').innerHTML = players.map((p, i) => {
                 let reward = "";
-                if (currentTab === 'week') {
-                    if (i === 0) reward = "💎 50";
-                    else if (i === 1) reward = "💎 40";
-                    else if (i === 2) reward = "💎 30";
-                    else if (i < 10) reward = "💎 10";
-                }
-                return `<tr style="background:rgba(255,255,255,0.5); border-radius:10px;">
-                    <td style="padding:10px;">#${i+1}</td>
-                    <td style="text-align:left;">${p.name}</td>
-                    <td style="text-align:right;">${Math.floor(p.score).toLocaleString()}</td>
-                    <td class="reward-col">${reward}</td>
-                </tr>`;
+                if(currentTab === 'week' && i < 10) reward = `💎${i==0?50:i==1?40:i==2?30:10}`;
+                if(currentTab === 'day' && i < 10) reward = `💰${i==0?10000:i==1?5000:i==2?2000:1000}`;
+                return `<tr style="background:rgba(255,255,255,0.5);"><td style="padding:10px;">#${i+1}</td><td style="text-align:left;">${p.name}</td><td style="text-align:right;">${Math.floor(p.score).toLocaleString()}</td><td class="reward-col">${reward}</td></tr>`;
             }).join('');
         }
 
         function toggleScreen(id, show) { 
             document.getElementById(id).style.display = show ? 'block' : 'none'; 
-            if(id === 'top-screen' && show) renderTop();
+            if(show) { if(id==='top-screen') renderTop(); if(id==='inv-screen') renderInventory(); }
         }
 
-        function changeTab(tab) { currentTab = tab; renderTop(); }
-
+        function changeTab(t) { currentTab = t; renderTop(); }
         function buyUpgrade() { if (balance >= cost) { balance -= cost; profit += 0.5; cost = Math.floor(cost * 1.5); updateUI(); save(); } }
-        function buyEnergy(a, p) { if (balance >= p) { balance -= p; energy = Math.min(maxEnergy, energy + a); updateUI(); save(); } }
-
+        function save() {
+            localStorage.setItem('z_balance', balance); localStorage.setItem('z_dia', diamonds);
+            localStorage.setItem('z_sc_total', scoreTotal); localStorage.setItem('z_sc_d', scoreDay);
+            localStorage.setItem('z_sc_w', scoreWeek); localStorage.setItem('z_pr', profit);
+            localStorage.setItem('z_co', cost); localStorage.setItem('z_en', energy);
+            localStorage.setItem('z_inv', JSON.stringify(inventory)); localStorage.setItem('z_tm', currentTimer);
+            localStorage.setItem('z_ls', Date.now()); localStorage.setItem('z_dr', dayReset); localStorage.setItem('z_wr', weekReset);
+        }
         setInterval(() => {
-            let gain = profit / 10;
-            balance += gain; scoreTotal += gain; scoreWeek += gain;
-            if (energy < maxEnergy) {
-                currentTimer -= 0.1;
-                if (currentTimer <= 0) { energy += 1; currentTimer = restoreTime; }
-            }
+            balance += profit/10; scoreTotal += profit/10; scoreDay += profit/10; scoreWeek += profit/10;
+            if (energy < maxEnergy) { currentTimer -= 0.1; if (currentTimer <= 0) { energy += 1; currentTimer = restoreTime; } }
             updateUI();
         }, 100);
-
-        function save() {
-            localStorage.setItem('z_balance', balance);
-            localStorage.setItem('z_dia', diamonds);
-            localStorage.setItem('z_sc_total', scoreTotal);
-            localStorage.setItem('z_sc_w', scoreWeek);
-            localStorage.setItem('z_pr', profit);
-            localStorage.setItem('z_co', cost);
-            localStorage.setItem('z_en', energy);
-            localStorage.setItem('z_tm', currentTimer);
-            localStorage.setItem('z_ls', Date.now());
-            localStorage.setItem('z_wr', weekReset);
-        }
         setInterval(save, 3000);
         updateUI();
     </script>
