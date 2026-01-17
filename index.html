@@ -3,123 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NFT STARS 2026</title>
+    <title>NFT STARS - Levels</title>
     <script src="https://telegram.org"></script>
     <style>
-        :root { --bg: #0b0e11; --accent: #fcd535; --glass: rgba(255, 255, 255, 0.05); }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; padding: 0; overflow: hidden; }
-        
-        /* Стили экранов */
-        .screen { display: none; height: 100vh; width: 100vw; flex-direction: column; align-items: center; justify-content: center; position: absolute; top: 0; left: 0; transition: 0.3s; }
+        :root { --bg: #0b0e11; --accent: #fcd535; --card: #1e2329; }
+        body { font-family: sans-serif; background: var(--bg); color: white; margin: 0; padding: 0; overflow: hidden; }
+
+        /* Общий стиль для всех экранов */
+        .screen {
+            display: none; /* Все экраны скрыты по умолчанию */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+            position: absolute;
+        }
+
+        /* Активный экран будет виден */
         .active { display: flex; }
 
-        /* ЭТАП 1: МЕНЮ */
-        .balance-card { background: var(--glass); padding: 20px; border-radius: 20px; border: 1px solid var(--accent); text-align: center; width: 80%; }
-        .main-gift { font-size: 100px; margin: 40px 0; filter: drop-shadow(0 0 15px var(--accent)); }
-        
-        /* ЭТАП 2: РУЛЕТКА */
-        .roulette-wrap { width: 100%; height: 120px; position: relative; overflow: hidden; background: rgba(0,0,0,0.3); border-top: 2px solid var(--accent); border-bottom: 2px solid var(--accent); }
-        .track { display: flex; position: absolute; left: 50%; height: 100%; transition: transform 3.5s cubic-bezier(0.1, 0, 0.1, 1); }
-        .slot { min-width: 100px; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 45px; border-right: 1px solid rgba(255,255,255,0.05); }
-        .pointer { position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; background: var(--accent); transform: translateX(-50%); z-index: 5; box-shadow: 0 0 10px var(--accent); }
+        /* ЭКРАН 1: ГЛАВНЫЙ */
+        .balance-card { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid var(--accent); text-align: center; width: 70%; }
+        .gift-big { font-size: 100px; margin: 40px 0; }
 
-        /* ЭТАП 3: РЕЗУЛЬТАТ */
-        .win-card { background: var(--glass); padding: 30px; border-radius: 30px; border: 1px solid var(--accent); text-align: center; animation: pop 0.5s cubic-bezier(0.17, 0.89, 0.32, 1.49); }
-        @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+        /* ЭКРАН 2: РУЛЕТКА */
+        .roulette-wrap { width: 100%; height: 100px; overflow: hidden; position: relative; background: rgba(255,255,255,0.05); border: 2px solid var(--accent); }
+        .track { display: flex; position: absolute; left: 50%; height: 100%; transition: transform 3s cubic-bezier(0.1, 0, 0.1, 1); }
+        .slot { min-width: 100px; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 40px; }
 
-        button { background: var(--accent); color: black; border: none; padding: 15px 30px; border-radius: 15px; font-weight: bold; font-size: 18px; cursor: pointer; width: 80%; margin-top: 20px; }
+        /* ЭКРАН 3: РЕЗУЛЬТАТ */
+        .win-box { background: var(--card); padding: 40px; border-radius: 30px; text-align: center; border: 2px solid var(--accent); }
+
+        button { background: var(--accent); color: black; border: none; padding: 18px 30px; border-radius: 15px; font-weight: bold; font-size: 18px; width: 80%; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <!-- ЭТАП 1: ГЛАВНЫЙ ЭКРАН -->
-    <div id="screen-menu" class="screen active">
+    <!-- ЭКРАН 1: ГЛАВНОЕ МЕНЮ -->
+    <div id="screen-main" class="screen active">
         <div class="balance-card">
-            <div style="opacity: 0.6; font-size: 12px;">ВАШ БАЛАНС</div>
-            <div style="font-size: 32px; font-weight: 900;">⭐ <span id="bal">500</span></div>
+            <div style="font-size: 12px; opacity: 0.6;">ВАШИ ЗВЕЗДЫ</div>
+            <div style="font-size: 32px;">⭐ <span id="bal-val">500</span></div>
         </div>
-        <div class="main-gift">🎁</div>
-        <button onclick="goToOpening()">ОТКРЫТЬ ЗА 25 ⭐</button>
+        <div class="gift-big">🎁</div>
+        <button onclick="startSpin()">КРУТИТЬ ЗА 25 ⭐</button>
     </div>
 
-    <!-- ЭТАП 2: ПРОЦЕСС ОТКРЫТИЯ -->
-    <div id="screen-opening" class="screen">
+    <!-- ЭКРАН 2: АНИМАЦИЯ (РУЛЕТКА) -->
+    <div id="screen-spin" class="screen">
         <h2 style="color: var(--accent);">УДАЧИ...</h2>
         <div class="roulette-wrap">
-            <div class="pointer"></div>
             <div id="track" class="track"></div>
         </div>
     </div>
 
-    <!-- ЭТАП 3: РЕЗУЛЬТАТ -->
-    <div id="screen-result" class="screen">
-        <div class="win-card">
-            <div style="font-size: 14px; margin-bottom: 10px; color: var(--accent);">ВЫ ВЫИГРАЛИ:</div>
-            <div id="win-icon" style="font-size: 80px; margin-bottom: 10px;">💎</div>
-            <div id="win-name" style="font-weight: bold; font-size: 20px;">Rare NFT</div>
-            <button onclick="goToMenu()" style="width: 100%;">ЗАБРАТЬ</button>
+    <!-- ЭКРАН 3: РЕЗУЛЬТАТ (ВЫПАДЕНИЕ) -->
+    <div id="screen-win" class="screen">
+        <div class="win-box">
+            <div style="color: var(--accent); margin-bottom: 10px;">ВЫ ВЫИГРАЛИ!</div>
+            <div id="win-icon" style="font-size: 80px; margin-bottom: 15px;">💎</div>
+            <div id="win-name" style="font-size: 24px; font-weight: bold; margin-bottom: 20px;">Rare Gift</div>
+            <button onclick="backToMain()">ЗАБРАТЬ</button>
         </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready(); tg.expand();
+        tg.expand();
 
         let stars = 500;
-        const items = [
-            {e:'💎', n:'Кристалл'}, {e:'🚀', n:'Ракета'}, {e:'👑', n:'Корона'}, 
-            {e:'🏆', n:'Кубок'}, {e:'🌈', n:'Радуга'}, {e:'🔥', n:'Огонь'}
-        ];
+        const gifts = [{i:'💎', n:'Кристалл'}, {i:'🚀', n:'Ракета'}, {i:'👑', n:'Корона'}, {i:'🏆', n:'Кубок'}];
 
-        function showScreen(id) {
+        // Функция переключения экранов
+        function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+            document.getElementById(screenId).classList.add('active');
         }
 
-        function goToOpening() {
+        // ШАГ 1 -> ШАГ 2
+        function startSpin() {
             if (stars < 25) return tg.showAlert("Мало звезд!");
             stars -= 25;
-            document.getElementById('bal').innerText = stars;
-            
-            // Генерируем ленту
+            document.getElementById('bal-val').innerText = stars;
+
+            // Подготовка рулетки
             const track = document.getElementById('track');
             track.innerHTML = '';
             for(let i=0; i<40; i++) {
-                const item = items[Math.floor(Math.random()*items.length)];
-                track.innerHTML += `<div class="slot">${item.e}</div>`;
+                const item = gifts[Math.floor(Math.random()*gifts.length)];
+                track.innerHTML += `<div class="slot">${item.i}</div>`;
             }
-            track.style.transform = `translateX(0px)`;
-            
-            showScreen('screen-opening');
+            track.style.transform = 'translateX(0)';
+
+            // ПЕРЕХОД К ЭКРАНУ СПИНА
+            showScreen('screen-spin');
             tg.HapticFeedback.impactOccurred('medium');
 
-            // Запуск прокрутки
-            const win = items[Math.floor(Math.random()*items.length)];
-            track.children[35].innerHTML = win.e; // 35-й слот - выигрышный
-            
+            // Запуск вращения
+            const winItem = gifts[Math.floor(Math.random()*gifts.length)];
+            track.children[35].innerHTML = winItem.i; // 35-й слот - это победа
+
             setTimeout(() => {
-                track.style.transform = `translateX(-${35 * 100}px)`;
+                track.style.transform = 'translateX(-3500px)'; // Сдвиг ленты
             }, 100);
 
+            // ШАГ 2 -> ШАГ 3 (через 3.5 секунды)
             setTimeout(() => {
-                showResult(win);
-            }, 4000);
+                showResult(winItem);
+            }, 3500);
         }
 
-        function showResult(win) {
-            document.getElementById('win-icon').innerText = win.e;
-            document.getElementById('win-name').innerText = win.n;
-            showScreen('screen-result');
+        function showResult(item) {
+            document.getElementById('win-icon').innerText = item.i;
+            document.getElementById('win-name').innerText = item.n;
+            
+            // ПЕРЕХОД К ЭКРАНУ ВЫИГРЫША
+            showScreen('screen-win');
             tg.HapticFeedback.notificationOccurred('success');
         }
 
-        function goToMenu() {
-            showScreen('screen-menu');
-            tg.HapticFeedback.impactOccurred('light');
+        // ШАГ 3 -> ШАГ 1
+        function backToMain() {
+            showScreen('screen-main');
         }
-
-        // Данные из Telegram
-        document.getElementById('bal').innerText = stars;
     </script>
 </body>
 </html>
