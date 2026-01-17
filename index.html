@@ -3,186 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tooth Lift Pro</title>
+    <title>Strong Tooth Clicker</title>
     <script src="https://telegram.org"></script>
     <style>
         :root {
-            --main-bg: #f0f4f8;
-            --accent-color: #3498db;
-            --tooth-size: 180px;
+            --bg-color: #e3f2fd;
+            --tooth-base-size: 220px;
         }
 
         body {
-            margin: 0;
-            background-color: var(--main-bg);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             height: 100vh;
-            user-select: none;
-            touch-action: manipulation; /* Убирает задержку клика в мобильных браузерах */
+            display: flex; flex-direction: column; align-items: center;
+            overflow: hidden; touch-action: none;
         }
 
-        /* Контейнер очков с плавной анимацией цифр */
-        .score-board {
-            margin-top: 40px;
-            font-size: 40px;
-            font-weight: 900;
-            color: #2c3e50;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        /* Площадка для игры */
-        .game-container {
-            position: relative;
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-        }
-
-        /* Композиция Зуб + Штанга */
-        .athlete-wrapper {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: transform 0.05s;
-        }
-
-        /* Штанга */
-        .barbell {
-            width: 260px;
-            height: 15px;
-            background: #333;
-            border-radius: 10px;
+        /* Задний фон с гирей */
+        .background-kettlebell {
             position: absolute;
-            top: 20px;
-            z-index: 2;
-            transition: transform 0.1s ease-out;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .barbell::before, .barbell::after {
-            content: '';
-            position: absolute;
-            width: 40px; height: 40px;
-            background: #222; border-radius: 5px;
-            top: -12px;
-        }
-        .barbell::before { left: -10px; }
-        .barbell::after { right: -10px; }
-
-        /* Зуб */
-        .tooth {
-            width: var(--tooth-size);
-            height: var(--tooth-size);
-            background: url('https://cdn-icons-png.flaticon.com') no-repeat center/contain;
-            z-index: 1;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%; opacity: 0.05;
+            z-index: 0; pointer-events: none;
         }
 
-        /* Анимация при тапе */
-        .lift-anim .barbell {
-            transform: translateY(-50px); /* Штанга идет вверх */
-        }
-        .lift-anim .tooth {
-            transform: scaleY(0.9) translateY(10px); /* Зуб приседает */
+        .header {
+            z-index: 10; margin-top: 40px; text-align: center;
         }
 
-        /* Кнопка ТОП */
-        .nav-btn {
-            margin-bottom: 40px;
-            background: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            color: var(--accent-color);
+        .score-box {
+            font-size: 48px; font-weight: 900; color: #1565c0;
+            display: flex; align-items: center; gap: 10px;
         }
 
-        /* Всплывающий текст +1 */
-        .tap-effect {
-            position: fixed;
-            pointer-events: none;
-            color: #27ae60;
-            font-weight: bold;
-            font-size: 24px;
-            animation: flyUp 0.6s ease-out forwards;
-            z-index: 100;
+        .level-text { font-size: 14px; color: #546e7a; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Игровой контейнер */
+        .game-world {
+            position: relative; flex: 1; width: 100%;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 5;
         }
 
-        @keyframes flyUp {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-100px); opacity: 0; }
+        /* Композиция Зуба */
+        .tooth-container {
+            position: relative;
+            width: var(--tooth-base-size);
+            height: var(--tooth-base-size);
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Основное тело зуба (белый мультяшный) */
+        .tooth-body {
+            width: 100%; height: 100%;
+            background: white; border-radius: 40px 40px 60px 60px;
+            border: 6px solid #333; position: relative;
+            box-shadow: inset -10px -10px 0 #eceff1;
+        }
+
+        /* Глаза */
+        .eye {
+            position: absolute; top: 30%; width: 20px; height: 30px;
+            background: #333; border-radius: 50%;
+        }
+        .eye.left { left: 25%; }
+        .eye.right { right: 25%; }
+
+        /* Улыбка */
+        .mouth {
+            position: absolute; top: 55%; left: 50%; transform: translateX(-50%);
+            width: 40px; height: 20px; border-bottom: 5px solid #333; border-radius: 50%;
+        }
+
+        /* Штанга в руках */
+        .barbell-obj {
+            position: absolute; top: -20px; left: -40px; width: 300px; height: 12px;
+            background: #263238; border-radius: 6px; z-index: 20;
+            transition: transform 0.08s;
+        }
+        .barbell-obj::before, .barbell-obj::after {
+            content: ''; position: absolute; width: 50px; height: 50px;
+            background: #212121; border-radius: 8px; top: -20px;
+        }
+        .barbell-obj::before { left: -10px; }
+        .barbell-obj::after { right: -10px; }
+
+        /* МЫШЦЫ (появляются по условию) */
+        .biceps {
+            display: none; position: absolute; top: 40%;
+            width: 50px; height: 50px; background: white;
+            border: 5px solid #333; border-radius: 50%; z-index: -1;
+        }
+        .biceps.left { left: -35px; }
+        .biceps.right { right: -35px; }
+
+        /* Состояния уровней */
+        .lvl-medium .biceps { display: block; } /* Появились руки */
+        .lvl-hard .tooth-container { transform: scale(1.2); } /* Стал больше */
+
+        /* Эффект клика */
+        .active-tap { transform: scale(0.92) translateY(15px); }
+
+        .btn-leaderboard {
+            z-index: 10; margin-bottom: 40px; padding: 18px 45px;
+            background: #1e88e5; color: white; border: none;
+            border-radius: 20px; font-size: 18px; font-weight: bold;
+            box-shadow: 0 10px 20px rgba(30,136,229,0.3);
         }
     </style>
 </head>
 <body>
 
-    <div class="score-board">
-        <span id="score">0</span> 🦾
-    </div>
+    <!-- Задний фон -->
+    <img src="https://cdn-icons-png.flaticon.com" class="background-kettlebell" alt="kettlebell">
 
-    <div class="game-container" id="tap-zone">
-        <div class="athlete-wrapper" id="athlete">
-            <div class="barbell"></div>
-            <div class="tooth"></div>
+    <div class="header">
+        <div class="level-text" id="status">Уровень: Новичок</div>
+        <div class="score-box">
+            <span id="score">0</span>
+            <img src="https://cdn-icons-png.flaticon.com" width="40" alt="гантель">
         </div>
     </div>
 
-    <button class="nav-btn" onclick="showLeaderboard()">🏆 РЕЙТИНГ ТОП-150</button>
+    <div class="game-world" id="main-area">
+        <div class="tooth-container" id="tooth-hero">
+            <div class="barbell-obj"></div>
+            <div class="tooth-body">
+                <div class="eye left"></div>
+                <div class="eye right"></div>
+                <div class="mouth"></div>
+                <!-- Мышцы -->
+                <div class="biceps left"></div>
+                <div class="biceps right"></div>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-leaderboard" onclick="showTop()">🏆 ТОР-150 ГЕРОЕВ</button>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.enableClosingConfirmation();
 
-        let score = parseInt(localStorage.getItem('user_score')) || 0;
+        let count = parseInt(localStorage.getItem('tooth_clicks')) || 0;
         const scoreEl = document.getElementById('score');
-        const athlete = document.getElementById('athlete');
-        const tapZone = document.getElementById('tap-zone');
+        const hero = document.getElementById('tooth-hero');
+        const statusEl = document.getElementById('status');
 
-        scoreEl.innerText = score;
-
-        // Эффективный обработчик тапов
-        tapZone.addEventListener('touchstart', (e) => {
-            e.preventDefault(); // Убирает системные жесты
-            
-            // 1. Увеличиваем счет
-            score++;
-            scoreEl.innerText = score;
-            localStorage.setItem('user_score', score);
-
-            // 2. Визуальная анимация
-            athlete.classList.remove('lift-anim');
-            void athlete.offsetWidth; // Магия для перезапуска анимации
-            athlete.classList.add('lift-anim');
-
-            // 3. Виброотклик Telegram
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
+        function updateLevel() {
+            if (count >= 1000) {
+                hero.className = 'tooth-container lvl-medium lvl-hard';
+                statusEl.innerText = "Уровень: ГИГАНТ";
+            } else if (count >= 100) {
+                hero.className = 'tooth-container lvl-medium';
+                statusEl.innerText = "Уровень: Крепыш";
             }
-
-            // 4. Текст +1 в месте клика
-            const touch = e.touches[0];
-            showTapEffect(touch.clientX, touch.clientY);
-        });
-
-        function showTapEffect(x, y) {
-            const effect = document.createElement('div');
-            effect.className = 'tap-effect';
-            effect.innerText = '+1';
-            effect.style.left = `${x}px`;
-            effect.style.top = `${y}px`;
-            document.body.appendChild(effect);
-            setTimeout(() => effect.remove(), 600);
         }
 
-        function showLeaderboard() {
-            // Здесь будет логика открытия топа (напишем в следующем шаге)
-            tg.showAlert("Рейтинг загружается...");
+        function clickHandler(e) {
+            count++;
+            scoreEl.innerText = count;
+            localStorage.setItem('tooth_clicks', count);
+
+            // Анимация
+            hero.classList.add('active-tap');
+            setTimeout(() => hero.classList.remove('active-tap'), 100);
+
+            // Проверка уровня
+            updateLevel();
+
+            // Вибрация
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+        }
+
+        document.getElementById('main-area').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            clickHandler();
+        });
+
+        // Инициализация при запуске
+        updateLevel();
+        scoreEl.innerText = count;
+
+        function showTop() {
+            tg.showAlert("Рейтинг в разработке. Вы набрали: " + count + " гантелей!");
         }
     </script>
 </body>
