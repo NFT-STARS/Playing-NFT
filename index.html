@@ -3,129 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NFT STARS - Levels</title>
+    <title>NFT ТЮРЯГА 2026</title>
     <script src="https://telegram.org"></script>
     <style>
-        :root { --bg: #0b0e11; --accent: #fcd535; --card: #1e2329; }
-        body { font-family: sans-serif; background: var(--bg); color: white; margin: 0; padding: 0; overflow: hidden; }
-
-        /* Общий стиль для всех экранов */
-        .screen {
-            display: none; /* Все экраны скрыты по умолчанию */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            width: 100vw;
-            position: absolute;
+        :root {
+            --bg: #1a1a1a;
+            --accent: #ff4d4d; /* Красный как в классике */
+            --card: #2d2d2d;
+            --text: #e0e0e0;
         }
 
-        /* Активный экран будет виден */
-        .active { display: flex; }
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center;
+            overflow-x: hidden; touch-action: manipulation;
+        }
 
-        /* ЭКРАН 1: ГЛАВНЫЙ */
-        .balance-card { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid var(--accent); text-align: center; width: 70%; }
-        .gift-big { font-size: 100px; margin: 40px 0; }
+        /* Шапка профиля */
+        .header {
+            width: 100%; padding: 15px; background: #000;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid var(--accent); box-sizing: border-box;
+        }
 
-        /* ЭКРАН 2: РУЛЕТКА */
-        .roulette-wrap { width: 100%; height: 100px; overflow: hidden; position: relative; background: rgba(255,255,255,0.05); border: 2px solid var(--accent); }
-        .track { display: flex; position: absolute; left: 50%; height: 100%; transition: transform 3s cubic-bezier(0.1, 0, 0.1, 1); }
-        .slot { min-width: 100px; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+        .stats-top { text-align: left; }
+        .lvl-badge { background: var(--accent); color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
 
-        /* ЭКРАН 3: РЕЗУЛЬТАТ */
-        .win-box { background: var(--card); padding: 40px; border-radius: 30px; text-align: center; border: 2px solid var(--accent); }
+        /* Игровая зона */
+        .prison-cell {
+            width: 100%; height: 300px;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://img.freepik.com');
+            background-size: cover; background-position: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+            padding-bottom: 20px;
+        }
 
-        button { background: var(--accent); color: black; border: none; padding: 18px 30px; border-radius: 15px; font-weight: bold; font-size: 18px; width: 80%; cursor: pointer; }
+        .boss-info { font-size: 20px; font-weight: bold; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+
+        /* Энергия и Опыт */
+        .bar-container { width: 90%; margin: 10px 0; }
+        .bar-label { font-size: 12px; margin-bottom: 4px; display: flex; justify-content: space-between; }
+        .bar { width: 100%; height: 12px; background: #444; border-radius: 6px; overflow: hidden; border: 1px solid #555; }
+        .fill-exp { height: 100%; background: #3498db; width: 0%; transition: 0.3s; }
+        .fill-energy { height: 100%; background: #2ecc71; width: 100%; transition: 0.3s; }
+
+        /* Кнопки действий */
+        .actions { width: 90%; margin-top: 20px; }
+        .btn-action {
+            width: 100%; padding: 18px; margin-bottom: 10px;
+            background: var(--card); color: white; border: 1px solid var(--accent);
+            border-radius: 8px; font-weight: bold; font-family: inherit;
+            cursor: pointer; text-transform: uppercase;
+        }
+        .btn-action:active { background: var(--accent); color: black; }
+
+        /* Наколки (Инвентарь) */
+        .tattoos {
+            width: 90%; margin-top: 20px; padding-bottom: 50px;
+        }
+        .tattoo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; }
+        .t-slot { background: var(--card); aspect-ratio: 1; border: 1px dashed #555; display: flex; align-items: center; justify-content: center; font-size: 24px; }
     </style>
 </head>
 <body>
 
-    <!-- ЭКРАН 1: ГЛАВНОЕ МЕНЮ -->
-    <div id="screen-main" class="screen active">
-        <div class="balance-card">
-            <div style="font-size: 12px; opacity: 0.6;">ВАШИ ЗВЕЗДЫ</div>
-            <div style="font-size: 32px;">⭐ <span id="bal-val">500</span></div>
+    <div class="header">
+        <div class="stats-top">
+            <span class="lvl-badge" id="lvl">1 LVL</span>
+            <div id="u-name" style="margin-top: 5px;">ЗЕК</div>
         </div>
-        <div class="gift-big">🎁</div>
-        <button onclick="startSpin()">КРУТИТЬ ЗА 25 ⭐</button>
-    </div>
-
-    <!-- ЭКРАН 2: АНИМАЦИЯ (РУЛЕТКА) -->
-    <div id="screen-spin" class="screen">
-        <h2 style="color: var(--accent);">УДАЧИ...</h2>
-        <div class="roulette-wrap">
-            <div id="track" class="track"></div>
+        <div style="text-align: right;">
+            <div style="color: var(--accent);">АВТОРИТЕТ</div>
+            <div id="reputation" style="font-weight: bold;">0</div>
         </div>
     </div>
 
-    <!-- ЭКРАН 3: РЕЗУЛЬТАТ (ВЫПАДЕНИЕ) -->
-    <div id="screen-win" class="screen">
-        <div class="win-box">
-            <div style="color: var(--accent); margin-bottom: 10px;">ВЫ ВЫИГРАЛИ!</div>
-            <div id="win-icon" style="font-size: 80px; margin-bottom: 15px;">💎</div>
-            <div id="win-name" style="font-size: 24px; font-weight: bold; margin-bottom: 20px;">Rare Gift</div>
-            <button onclick="backToMain()">ЗАБРАТЬ</button>
+    <div class="prison-cell">
+        <div class="boss-info" id="status-text">КАРЦЕР</div>
+        <div style="font-size: 60px;">👤</div>
+    </div>
+
+    <div class="bar-container">
+        <div class="bar-label"><span>ОПЫТ</span><span id="exp-txt">0 / 100</span></div>
+        <div class="bar"><div class="fill-exp" id="exp-fill"></div></div>
+        
+        <div class="bar-label" style="margin-top:10px;"><span>ЭНЕРГИЯ</span><span id="en-txt">100 / 100</span></div>
+        <div class="bar"><div class="fill-energy" id="en-fill"></div></div>
+    </div>
+
+    <div class="actions">
+        <button class="btn-action" onclick="doWork()">ВЫПОЛНИТЬ ДЕЛО (-10 Энергии)</button>
+        <button class="btn-action" style="border-color: #3498db;" onclick="tg.showAlert('Боссы будут доступны на 5 уровне!')">НАПАСТЬ НА БОССА</button>
+    </div>
+
+    <div class="tattoos">
+        <div style="font-weight: bold; border-bottom: 1px solid #444;">ВАШИ НАКОЛКИ (NFT)</div>
+        <div class="tattoo-grid" id="tattoo-grid">
+            <div class="t-slot"></div><div class="t-slot"></div><div class="t-slot"></div><div class="t-slot"></div>
         </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
+        tg.ready();
         tg.expand();
 
-        let stars = 500;
-        const gifts = [{i:'💎', n:'Кристалл'}, {i:'🚀', n:'Ракета'}, {i:'👑', n:'Корона'}, {i:'🏆', n:'Кубок'}];
+        // Загрузка данных или дефолт
+        let data = JSON.parse(localStorage.getItem('prison_save_2026')) || {
+            lvl: 1, exp: 0, rep: 0, energy: 100, tattoos: []
+        };
 
-        // Функция переключения экранов
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
+        function updateUI() {
+            document.getElementById('lvl').innerText = `${data.lvl} LVL`;
+            document.getElementById('reputation').innerText = data.rep;
+            document.getElementById('exp-txt').innerText = `${data.exp} / ${data.lvl * 100}`;
+            document.getElementById('exp-fill').style.width = (data.exp / (data.lvl * 100) * 100) + '%';
+            document.getElementById('en-txt').innerText = `${Math.floor(data.energy)} / 100`;
+            document.getElementById('en-fill').style.width = data.energy + '%';
+            
+            if(tg.initDataUnsafe?.user) {
+                document.getElementById('u-name').innerText = tg.initDataUnsafe.user.first_name.toUpperCase();
+            }
+
+            localStorage.setItem('prison_save_2026', JSON.stringify(data));
         }
 
-        // ШАГ 1 -> ШАГ 2
-        function startSpin() {
-            if (stars < 25) return tg.showAlert("Мало звезд!");
-            stars -= 25;
-            document.getElementById('bal-val').innerText = stars;
-
-            // Подготовка рулетки
-            const track = document.getElementById('track');
-            track.innerHTML = '';
-            for(let i=0; i<40; i++) {
-                const item = gifts[Math.floor(Math.random()*gifts.length)];
-                track.innerHTML += `<div class="slot">${item.i}</div>`;
+        function doWork() {
+            if (data.energy < 10) {
+                tg.showAlert("Энергия на нуле! Отдохни на нарах.");
+                return;
             }
-            track.style.transform = 'translateX(0)';
 
-            // ПЕРЕХОД К ЭКРАНУ СПИНА
-            showScreen('screen-spin');
+            data.energy -= 10;
+            data.exp += 20;
+            data.rep += 5;
+
             tg.HapticFeedback.impactOccurred('medium');
 
-            // Запуск вращения
-            const winItem = gifts[Math.floor(Math.random()*gifts.length)];
-            track.children[35].innerHTML = winItem.i; // 35-й слот - это победа
+            // Проверка уровня
+            if (data.exp >= data.lvl * 100) {
+                data.exp = 0;
+                data.lvl += 1;
+                tg.showConfirm(`УРОВЕНЬ ПОВЫШЕН! Теперь ты ${data.lvl} LVL. Пора бить новую наколку!`);
+                addTattoo();
+            }
 
-            setTimeout(() => {
-                track.style.transform = 'translateX(-3500px)'; // Сдвиг ленты
-            }, 100);
-
-            // ШАГ 2 -> ШАГ 3 (через 3.5 секунды)
-            setTimeout(() => {
-                showResult(winItem);
-            }, 3500);
+            updateUI();
         }
 
-        function showResult(item) {
-            document.getElementById('win-icon').innerText = item.i;
-            document.getElementById('win-name').innerText = item.n;
+        function addTattoo() {
+            const tats = ['💀', '🗡️', '🕸️', '🐍', '🦅', '⛓️'];
+            const randomTat = tats[Math.floor(Math.random() * tats.length)];
+            data.tattoos.push(randomTat);
             
-            // ПЕРЕХОД К ЭКРАНУ ВЫИГРЫША
-            showScreen('screen-win');
-            tg.HapticFeedback.notificationOccurred('success');
+            const grid = document.getElementById('tattoo-grid');
+            grid.innerHTML = data.tattoos.map(t => `<div class="t-slot">${t}</div>`).join('');
         }
 
-        // ШАГ 3 -> ШАГ 1
-        function backToMain() {
-            showScreen('screen-main');
+        // Регенерация энергии (1 единица в 5 секунд)
+        setInterval(() => {
+            if (data.energy < 100) {
+                data.energy = Math.min(100, data.energy + 1);
+                updateUI();
+            }
+        }, 5000);
+
+        updateUI();
+        // Отрисовка тату при загрузке
+        if(data.tattoos.length > 0) {
+            document.getElementById('tattoo-grid').innerHTML = data.tattoos.map(t => `<div class="t-slot">${t}</div>`).join('');
         }
     </script>
 </body>
