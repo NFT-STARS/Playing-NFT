@@ -14,7 +14,6 @@
         #score { font-size: 50px; font-weight: 900; color: var(--main-color); margin: 0; }
         #profit { color: var(--accent-color); font-size: 18px; font-weight: bold; }
 
-        /* Игровая зона */
         #game-area { height: 55vh; display: flex; justify-content: center; align-items: center; position: relative; }
         
         #tooth {
@@ -27,15 +26,12 @@
         .eye { width: 18px; height: 18px; background: var(--main-color); border-radius: 50%; margin: 0 15px; }
         #mouth { width: 40px; height: 8px; border-radius: 10px; background: var(--main-color); transition: 0.1s; }
 
-        /* Шкала энергии (ИЗМЕНЕНО) */
         #energy-container { 
             width: 80%; margin: 20px auto; background: #dcdde1; 
-            height: 25px; /* Увеличил высоту, чтобы текст влез */
-            border-radius: 15px; overflow: hidden; position: relative; border: 2px solid var(--main-color);
+            height: 25px; border-radius: 15px; overflow: hidden; position: relative; border: 2px solid var(--main-color);
         }
         #energy-bar { width: 100%; height: 100%; background: var(--accent-color); transition: width 0.3s; }
         
-        /* Текст внутри полоски (НОВОЕ) */
         #energy-info {
             position: absolute; width: 100%; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
@@ -43,7 +39,6 @@
             pointer-events: none; z-index: 5;
         }
 
-        /* Эффекты */
         .active { transform: scale(0.95); }
         .active #mouth { height: 30px; border-radius: 50%; background: #e74c3c; }
         .plus-one {
@@ -72,10 +67,9 @@
         </div>
     </div>
 
-    <!-- Текст теперь внутри контейнера полоски -->
     <div id="energy-container">
         <div id="energy-bar"></div>
-        <div id="energy-info">⚡ <span id="e-num">1000</span> / 1000 | <span id="timer">00:00</span></div>
+        <div id="energy-info">⚡ <span id="e-num">50</span> / 50 | <span id="timer">05:00</span></div>
     </div>
 
     <button id="shop-btn" onclick="buyUpgrade()">УЛУЧШИТЬ (+1/сек) — <span id="cost">50</span> 💰</button>
@@ -84,8 +78,11 @@
         let score = parseInt(localStorage.getItem('z_sc')) || 0;
         let profit = parseInt(localStorage.getItem('z_pr')) || 0;
         let cost = parseInt(localStorage.getItem('z_co')) || 50;
-        let energy = 1000;
-        const maxEnergy = 1000;
+        
+        let energy = 50;
+        const maxEnergy = 50;
+        const restoreTime = 300; // 5 минут в секундах (5 * 60)
+        let currentTimer = restoreTime; // Таймер для +1 ед.
 
         const scoreEl = document.getElementById('score');
         const profitEl = document.getElementById('p-val');
@@ -103,9 +100,8 @@
             energyEl.style.width = (energy / maxEnergy * 100) + '%';
             
             if (energy < maxEnergy) {
-                let timeLeft = Math.ceil(maxEnergy - energy); 
-                let m = Math.floor(timeLeft / 60);
-                let s = timeLeft % 60;
+                let m = Math.floor(currentTimer / 60);
+                let s = Math.floor(currentTimer % 60);
                 timerEl.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
             } else {
                 timerEl.innerText = "FULL";
@@ -143,9 +139,20 @@
             }
         }
 
+        // Цикл игры (10 раз в секунду)
         setInterval(() => {
             score += profit / 10; 
-            if (energy < maxEnergy) energy += 0.1; 
+            
+            if (energy < maxEnergy) {
+                currentTimer -= 0.1; // Уменьшаем таймер
+                if (currentTimer <= 0) {
+                    energy += 1;
+                    currentTimer = restoreTime; // Сброс на 5 минут
+                }
+            } else {
+                currentTimer = restoreTime;
+            }
+            
             updateUI();
         }, 100);
 
@@ -157,7 +164,7 @@
         setInterval(save, 3000);
 
         tooth.addEventListener('touchstart', (e) => { e.preventDefault(); tap(e); });
-        tooth.addEventListener('mousedown', (tap));
+        tooth.addEventListener('mousedown', (e) => tap(e));
 
         updateUI();
     </script>
