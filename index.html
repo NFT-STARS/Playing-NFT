@@ -2,256 +2,125 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NFT Stars Mini App 2026</title>
-    <!-- Подключение SDK Telegram -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Зуб-Атлет</title>
     <script src="https://telegram.org"></script>
     <style>
-        :root {
-            --main-color: #f39c12;
-            --bg-color: #0f0f0f;
-            --card-bg: #1a1a1a;
-        }
-
         body {
-            background-color: var(--bg-color);
-            color: white;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
+            margin: 0; padding: 0;
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F7FA 100%);
+            font-family: 'Arial', sans-serif;
             overflow: hidden;
-            -webkit-user-select: none;
+            display: flex; flex-direction: column; align-items: center;
+            height: 100vh; touch-action: manipulation;
         }
-
-        /* 1. ЭКРАН ЗАГРУЗКИ (LOADER) */
-        #loader {
-            position: fixed;
-            inset: 0;
-            background: var(--bg-color);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            transition: opacity 0.5s ease;
+        #score-container {
+            margin-top: 50px; font-size: 32px; font-weight: bold; color: #2c3e50;
+            background: white; padding: 10px 20px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-
-        .progress-container {
-            width: 70%;
-            height: 10px;
-            background: #222;
-            border-radius: 10px;
-            margin: 20px 0;
-            overflow: hidden;
-            border: 1px solid #333;
+        #game-area {
+            flex-grow: 1; display: flex; align-items: center; justify-content: center; position: relative;
         }
-
-        #progress-bar {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, var(--main-color), #e67e22);
-            box-shadow: 0 0 15px rgba(243, 156, 18, 0.5);
-            transition: width 0.1s linear;
+        /* Зуб - можно заменить на <img> */
+        #tooth {
+            width: 200px; height: 200px; cursor: pointer; transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: url('https://cdn-icons-png.flaticon.com') no-repeat center/contain; /* Заглушка зуба */
         }
-
-        #percent-text {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--main-color);
-            font-family: monospace;
+        #tooth:active { transform: scale(0.9) translateY(20px); }
+        .barbell {
+            position: absolute; width: 250px; height: 40px; background: #333; top: 40%;
+            border-radius: 10px; transition: 0.1s; pointer-events: none;
         }
-
-        /* 2. ГЛАВНОЕ МЕНЮ И ЭКРАНЫ */
-        .screen {
-            display: none; /* Скрыты по умолчанию */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            animation: fadeIn 0.3s ease;
+        #top-btn {
+            margin-bottom: 30px; padding: 15px 40px; border-radius: 15px; border: none;
+            background: #27ae60; color: white; font-size: 18px; cursor: pointer;
         }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Баланс */
-        .balance-badge {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: var(--card-bg);
-            padding: 8px 15px;
-            border-radius: 15px;
-            border: 1px solid var(--main-color);
-            color: var(--main-color);
-            font-weight: bold;
+        /* Модалка ТОПа */
+        #leaderboard {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 10; overflow-y: auto; padding: 20px; box-sizing: border-box;
         }
-
-        /* Кнопки */
-        .btn {
-            width: 80%;
-            max-width: 300px;
-            background: linear-gradient(135deg, var(--main-color), #d35400);
-            border: none;
-            padding: 18px;
-            margin: 10px 0;
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 15px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-
-        .btn:active { transform: scale(0.96); }
-        .btn:disabled { background: #444; opacity: 0.6; box-shadow: none; }
-
-        .secondary-btn {
-            background: none;
-            border: 1px solid #444;
-            color: #888;
-            padding: 10px 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-
-        /* 3. ИГРОВАЯ АНИМАЦИЯ (КЕЙС) */
-        .case-icon { font-size: 100px; margin-bottom: 20px; transition: 0.3s; }
-        
-        .shake { animation: shake-anim 0.5s infinite; }
-        @keyframes shake-anim {
-            0% { transform: rotate(0); }
-            25% { transform: rotate(5deg); }
-            75% { transform: rotate(-5deg); }
-            100% { transform: rotate(0); }
-        }
-
-        .hidden { display: none; }
+        .user-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
     </style>
 </head>
 <body>
 
-    <!-- ЭКРАН ЗАГРУЗКИ -->
-    <div id="loader">
-        <div id="percent-text">0%</div>
-        <div class="progress-container">
-            <div id="progress-bar"></div>
-        </div>
-        <div style="letter-spacing: 3px; font-size: 10px; color: #555;">LOADING SYSTEM...</div>
+    <div id="score-container">🏋️‍♂️ <span id="score">0</span></div>
+
+    <div id="game-area">
+        <div id="tooth"></div>
     </div>
 
-    <!-- ВИДЖЕТ БАЛАНСА -->
-    <div id="balanceWidget" class="balance-badge hidden">
-        💰 <span id="userBalance">1000</span>
-    </div>
+    <button id="top-btn" onclick="showTop()">Посмотреть ТОП-150</button>
 
-    <!-- ГЛАВНОЕ МЕНЮ -->
-    <div id="mainMenu" class="screen">
-        <h1 style="color: var(--main-color); margin-bottom: 50px;">NFT STARS 2026</h1>
-        <button class="btn" onclick="goToScreen('gameScreen')">🎮 ИГРАТЬ</button>
-        <button class="btn" onclick="tg.showAlert('Магазин откроется скоро!')" style="background: #222;">🛒 МАГАЗИН</button>
-        <button class="btn" onclick="tg.showAlert('Топ игроков в разработке')" style="background: #222;">🏆 РЕЙТИНГ</button>
-    </div>
-
-    <!-- ЭКРАН ИГРЫ -->
-    <div id="gameScreen" class="screen">
-        <div id="boxEmoji" class="case-icon">📦</div>
-        <h2 id="gameStatus">Готов к открытию?</h2>
-        <p style="color: #666; margin-bottom: 30px;">Цена: 100 монет</p>
-        
-        <button id="openBtn" class="btn" onclick="logicOpenCase()">ОТКРЫТЬ КЕЙС</button>
-        <button class="secondary-btn" onclick="goToScreen('mainMenu')">← В МЕНЮ</button>
+    <div id="leaderboard">
+        <h2>Топ-150 качков</h2>
+        <div id="list"></div>
+        <button onclick="closeTop()" style="margin-top:20px; width:100%; padding:15px; background:#e74c3c; color:white; border:none; border-radius:10px;">Закрыть</button>
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        let balance = 1000;
-        const CASE_PRICE = 100;
-
-        // Инициализация
-        tg.ready();
+        let tg = window.Telegram.WebApp;
         tg.expand();
 
-        // 1. ЛОГИКА ЗАГРУЗКИ
-        function startLoading() {
-            let p = 0;
-            const bar = document.getElementById('progress-bar');
-            const pText = document.getElementById('percent-text');
-            
-            const interval = setInterval(() => {
-                p += 2;
-                bar.style.width = p + '%';
-                pText.innerText = p + '%';
+        let count = localStorage.getItem('dumbbells') || 0;
+        const scoreEl = document.getElementById('score');
+        const tooth = document.getElementById('tooth');
+        scoreEl.innerText = count;
 
-                if (p >= 100) {
+        // Клик по зубу
+        tooth.addEventListener('click', (e) => {
+            count++;
+            scoreEl.innerText = count;
+            localStorage.setItem('dumbbells', count);
+            
+            // Простая вибрация (Haptic Feedback)
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+
+            // Создание эффекта "+1"
+            createFloatingText(e.clientX, e.clientY);
+        });
+
+        function createFloatingText(x, y) {
+            const txt = document.createElement('div');
+            txt.innerText = '+1 🦾';
+            txt.style.position = 'fixed';
+            txt.style.left = x + 'px';
+            txt.style.top = y + 'px';
+            txt.style.color = '#2980b9';
+            txt.style.fontWeight = 'bold';
+            txt.style.pointerEvents = 'none';
+            document.body.appendChild(txt);
+            
+            let pos = y;
+            let interval = setInterval(() => {
+                pos -= 2;
+                txt.style.top = pos + 'px';
+                txt.style.opacity -= 0.05;
+                if (txt.style.opacity <= 0) {
                     clearInterval(interval);
-                    document.getElementById('loader').style.opacity = '0';
-                    setTimeout(() => {
-                        document.getElementById('loader').style.display = 'none';
-                        document.getElementById('balanceWidget').classList.remove('hidden');
-                        goToScreen('mainMenu');
-                    }, 500);
+                    txt.remove();
                 }
-            }, 40);
+            }, 20);
         }
 
-        // 2. НАВИГАЦИЯ
-        function goToScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
-            document.getElementById(screenId).style.display = 'flex';
-            tg.HapticFeedback.impactOccurred('light');
-        }
-
-        // 3. ИГРОВАЯ ЛОГИКА
-        function logicOpenCase() {
-            if (balance < CASE_PRICE) {
-                tg.HapticFeedback.notificationOccurred('error');
-                tg.showAlert("Недостаточно монет! 💰");
-                return;
-            }
-
-            // Списание
-            balance -= CASE_PRICE;
-            document.getElementById('userBalance').innerText = balance;
+        function showTop() {
+            document.getElementById('leaderboard').style.display = 'block';
+            const list = document.getElementById('list');
+            list.innerHTML = '';
             
-            // Анимация
-            const btn = document.getElementById('openBtn');
-            const box = document.getElementById('boxEmoji');
-            const status = document.getElementById('gameStatus');
-
-            btn.disabled = true;
-            box.classList.add('shake');
-            status.innerText = "Открываем...";
-            tg.HapticFeedback.impactOccurred('medium');
-
-            setTimeout(() => {
-                box.classList.remove('shake');
-                
-                const prizes = ['💎 АЛМАЗ', '🔥 NFT APE', '💰 1000 МОНЕТ', '🤡 ТЫКВА', '⭐️ ЗВЕЗДА'];
-                const win = prizes[Math.floor(Math.random() * prizes.length)];
-                
-                box.innerText = "🎁";
-                status.innerText = "ВЫПАЛО: " + win;
-                status.style.color = "#2ecc71";
-                
-                tg.HapticFeedback.notificationOccurred('success');
-                
-                // Кратковременное увеличение приза
-                box.style.transform = "scale(1.3)";
-                setTimeout(() => { 
-                    box.style.transform = "scale(1.0)"; 
-                    btn.disabled = false;
-                }, 500);
-
-            }, 2000);
+            // Имитация данных (в реальности нужно делать fetch запрос к вашему серверу)
+            for (let i = 1; i <= 150; i++) {
+                const item = document.createElement('div');
+                item.className = 'user-item';
+                item.innerHTML = `<span>${i}. Игрок_${i}</span> <b>${Math.floor(10000/i)} 🦾</b>`;
+                list.appendChild(item);
+            }
         }
 
-        // Запуск при старте
-        window.onload = startLoading;
-
+        function closeTop() {
+            document.getElementById('leaderboard').style.display = 'none';
+        }
     </script>
 </body>
 </html>
