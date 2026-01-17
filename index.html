@@ -3,212 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NFT Stars Simulator</title>
+    <title>NFT STARS 2026</title>
     <script src="https://telegram.org"></script>
     <style>
-        :root {
-            --bg-color: #0d1117;
-            --accent-color: #fcd535;
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background-color: var(--bg-color);
-            background: radial-gradient(circle at top, #1a202c 0%, #0d1117 100%);
-            color: #ffffff;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Шапка профиля */
-        .header {
-            width: 90%;
-            padding: 20px;
-            margin-top: 15px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .user-info { display: flex; align-items: center; gap: 10px; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent-color); color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        :root { --bg: #0b0e11; --accent: #fcd535; --glass: rgba(255, 255, 255, 0.05); }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; padding: 0; overflow: hidden; }
         
-        .stats { text-align: right; }
-        .balance { color: var(--accent-color); font-size: 20px; font-weight: 800; }
-        .spent { font-size: 11px; opacity: 0.6; }
+        /* Стили экранов */
+        .screen { display: none; height: 100vh; width: 100vw; flex-direction: column; align-items: center; justify-content: center; position: absolute; top: 0; left: 0; transition: 0.3s; }
+        .active { display: flex; }
 
-        /* Игровая зона */
-        .main-stage {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-        }
+        /* ЭТАП 1: МЕНЮ */
+        .balance-card { background: var(--glass); padding: 20px; border-radius: 20px; border: 1px solid var(--accent); text-align: center; width: 80%; }
+        .main-gift { font-size: 100px; margin: 40px 0; filter: drop-shadow(0 0 15px var(--accent)); }
+        
+        /* ЭТАП 2: РУЛЕТКА */
+        .roulette-wrap { width: 100%; height: 120px; position: relative; overflow: hidden; background: rgba(0,0,0,0.3); border-top: 2px solid var(--accent); border-bottom: 2px solid var(--accent); }
+        .track { display: flex; position: absolute; left: 50%; height: 100%; transition: transform 3.5s cubic-bezier(0.1, 0, 0.1, 1); }
+        .slot { min-width: 100px; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 45px; border-right: 1px solid rgba(255,255,255,0.05); }
+        .pointer { position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; background: var(--accent); transform: translateX(-50%); z-index: 5; box-shadow: 0 0 10px var(--accent); }
 
-        .box-container {
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
+        /* ЭТАП 3: РЕЗУЛЬТАТ */
+        .win-card { background: var(--glass); padding: 30px; border-radius: 30px; border: 1px solid var(--accent); text-align: center; animation: pop 0.5s cubic-bezier(0.17, 0.89, 0.32, 1.49); }
+        @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
 
-        .box-emoji {
-            font-size: 120px;
-            filter: drop-shadow(0 0 20px rgba(252, 213, 53, 0.3));
-        }
-
-        /* Анимация встряски при клике */
-        .shake { animation: shakeAnim 0.5s ease-in-out; }
-        @keyframes shakeAnim {
-            0%, 100% { transform: rotate(0deg) scale(1); }
-            25% { transform: rotate(10deg) scale(1.1); }
-            75% { transform: rotate(-10deg) scale(1.1); }
-        }
-
-        /* Кнопка открытия */
-        .open-btn {
-            width: 85%;
-            padding: 18px;
-            margin-bottom: 30px;
-            background: linear-gradient(135deg, #fcd535 0%, #f7b500 100%);
-            border: none;
-            border-radius: 18px;
-            color: #000;
-            font-size: 18px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 10px 20px rgba(252, 213, 53, 0.2);
-            cursor: pointer;
-        }
-
-        /* Сетка инвентаря */
-        .inventory-panel {
-            width: 100%;
-            background: var(--glass-bg);
-            border-top: 1px solid var(--glass-border);
-            border-radius: 30px 30px 0 0;
-            padding: 20px;
-            max-height: 30vh;
-            overflow-y: auto;
-        }
-
-        .inventory-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-top: 15px;
-        }
-
-        .gift-slot {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--glass-border);
-            border-radius: 15px;
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-        }
+        button { background: var(--accent); color: black; border: none; padding: 15px 30px; border-radius: 15px; font-weight: bold; font-size: 18px; cursor: pointer; width: 80%; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="user-info">
-            <div class="avatar" id="avatar-char">?</div>
-            <div id="username">Player</div>
+    <!-- ЭТАП 1: ГЛАВНЫЙ ЭКРАН -->
+    <div id="screen-menu" class="screen active">
+        <div class="balance-card">
+            <div style="opacity: 0.6; font-size: 12px;">ВАШ БАЛАНС</div>
+            <div style="font-size: 32px; font-weight: 900;">⭐ <span id="bal">500</span></div>
         </div>
-        <div class="stats">
-            <div class="balance">⭐ <span id="bal-val">500</span></div>
-            <div class="spent">Затраты: <span id="spent-val">0</span></div>
+        <div class="main-gift">🎁</div>
+        <button onclick="goToOpening()">ОТКРЫТЬ ЗА 25 ⭐</button>
+    </div>
+
+    <!-- ЭТАП 2: ПРОЦЕСС ОТКРЫТИЯ -->
+    <div id="screen-opening" class="screen">
+        <h2 style="color: var(--accent);">УДАЧИ...</h2>
+        <div class="roulette-wrap">
+            <div class="pointer"></div>
+            <div id="track" class="track"></div>
         </div>
     </div>
 
-    <div class="main-stage">
-        <div class="box-container" id="box-trigger" onclick="openBox()">
-            <div class="box-emoji" id="visual-box">🎁</div>
-        </div>
-        <p style="opacity: 0.5; font-size: 14px; margin-top: 20px;">Нажми на сундук или кнопку</p>
-    </div>
-
-    <button class="open-btn" onclick="openBox()">Открыть за 25 ⭐</button>
-
-    <div class="inventory-panel">
-        <div style="font-weight: bold; font-size: 14px; opacity: 0.8;">ВАША КОЛЛЕКЦИЯ NFT</div>
-        <div class="inventory-grid" id="inv-grid">
-            <!-- Слоты будут здесь -->
+    <!-- ЭТАП 3: РЕЗУЛЬТАТ -->
+    <div id="screen-result" class="screen">
+        <div class="win-card">
+            <div style="font-size: 14px; margin-bottom: 10px; color: var(--accent);">ВЫ ВЫИГРАЛИ:</div>
+            <div id="win-icon" style="font-size: 80px; margin-bottom: 10px;">💎</div>
+            <div id="win-name" style="font-weight: bold; font-size: 20px;">Rare NFT</div>
+            <button onclick="goToMenu()" style="width: 100%;">ЗАБРАТЬ</button>
         </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+        tg.ready(); tg.expand();
 
-        let bal = 500;
-        let spent = 0;
-        const items = ['💎', '🚀', '👑', '👻', '🏆', '🌈', '🔥', '🌀'];
+        let stars = 500;
+        const items = [
+            {e:'💎', n:'Кристалл'}, {e:'🚀', n:'Ракета'}, {e:'👑', n:'Корона'}, 
+            {e:'🏆', n:'Кубок'}, {e:'🌈', n:'Радуга'}, {e:'🔥', n:'Огонь'}
+        ];
 
-        function openBox() {
-            if (bal < 25) {
-                tg.HapticFeedback.notificationOccurred('error');
-                tg.showAlert("Недостаточно звезд!");
-                return;
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function goToOpening() {
+            if (stars < 25) return tg.showAlert("Мало звезд!");
+            stars -= 25;
+            document.getElementById('bal').innerText = stars;
+            
+            // Генерируем ленту
+            const track = document.getElementById('track');
+            track.innerHTML = '';
+            for(let i=0; i<40; i++) {
+                const item = items[Math.floor(Math.random()*items.length)];
+                track.innerHTML += `<div class="slot">${item.e}</div>`;
             }
+            track.style.transform = `translateX(0px)`;
+            
+            showScreen('screen-opening');
+            tg.HapticFeedback.impactOccurred('medium');
 
-            // Визуальный эффект
-            const box = document.getElementById('box-trigger');
-            box.classList.add('shake');
-            tg.HapticFeedback.impactOccurred('heavy');
+            // Запуск прокрутки
+            const win = items[Math.floor(Math.random()*items.length)];
+            track.children[35].innerHTML = win.e; // 35-й слот - выигрышный
+            
+            setTimeout(() => {
+                track.style.transform = `translateX(-${35 * 100}px)`;
+            }, 100);
 
             setTimeout(() => {
-                box.classList.remove('shake');
-                bal -= 25;
-                spent += 25;
-                
-                const win = items[Math.floor(Math.random() * items.length)];
-                addSlot(win);
-                updateDisplay();
-                
-                tg.HapticFeedback.notificationOccurred('success');
-            }, 500);
+                showResult(win);
+            }, 4000);
         }
 
-        function addSlot(emoji) {
-            const grid = document.getElementById('inv-grid');
-            const slot = document.createElement('div');
-            slot.className = 'gift-slot';
-            slot.innerText = emoji;
-            grid.prepend(slot);
+        function showResult(win) {
+            document.getElementById('win-icon').innerText = win.e;
+            document.getElementById('win-name').innerText = win.n;
+            showScreen('screen-result');
+            tg.HapticFeedback.notificationOccurred('success');
         }
 
-        function updateDisplay() {
-            document.getElementById('bal-val').innerText = bal;
-            document.getElementById('spent-val').innerText = spent;
+        function goToMenu() {
+            showScreen('screen-menu');
+            tg.HapticFeedback.impactOccurred('light');
         }
 
-        // Загрузка данных пользователя
-        if (tg.initDataUnsafe?.user) {
-            const user = tg.initDataUnsafe.user;
-            document.getElementById('username').innerText = user.first_name;
-            document.getElementById('avatar-char').innerText = user.first_name.charAt(0);
-        }
-
-        updateDisplay();
+        // Данные из Telegram
+        document.getElementById('bal').innerText = stars;
     </script>
 </body>
 </html>
-
