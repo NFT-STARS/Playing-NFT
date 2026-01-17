@@ -3,126 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Strong Tooth Game</title>
+    <title>Зуб-Тапер 2026</title>
     <style>
+        :root { --main-color: #2c3e50; --accent-color: #27ae60; }
         body { 
-            margin: 0; padding: 0; background: #e0f0ff; 
-            font-family: sans-serif; text-align: center; 
-            overflow: hidden; touch-action: none; 
+            margin: 0; background: linear-gradient(180deg, #e0f0ff 0%, #ffffff 100%); 
+            font-family: 'Segoe UI', sans-serif; text-align: center; overflow: hidden; touch-action: none; 
         }
-        #score-container { margin-top: 50px; }
-        #score { font-size: 60px; font-weight: bold; color: #2c3e50; }
+        #ui { padding-top: 40px; }
+        #score { font-size: 50px; font-weight: 900; color: var(--main-color); margin: 0; }
+        #profit { color: var(--accent-color); font-size: 18px; font-weight: bold; }
+
+        /* Игровая зона */
+        #game-area { height: 55vh; display: flex; justify-content: center; align-items: center; position: relative; }
         
-        #game-area {
-            height: 60vh; display: flex; justify-content: center; align-items: center;
-        }
-
-        #tooth-btn {
-            width: 180px; height: 200px; background: white;
-            border: 6px solid #2c3e50; border-radius: 50px;
-            position: relative; cursor: pointer;
-            transition: transform 0.05s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        #tooth {
+            width: 200px; height: 220px; background: white; border: 8px solid var(--main-color);
+            border-radius: 60px; position: relative; cursor: pointer;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.05s; z-index: 10;
         }
+        .eye-row { display: flex; margin-bottom: 10px; }
+        .eye { width: 18px; height: 18px; background: var(--main-color); border-radius: 50%; margin: 0 15px; }
+        #mouth { width: 40px; height: 8px; border-radius: 10px; background: var(--main-color); transition: 0.1s; }
 
-        #barbell {
-            width: 280px; height: 15px; background: #333;
-            position: absolute; top: -35px; border-radius: 10px;
-            transition: transform 0.05s;
-        }
-        .weight { width: 30px; height: 70px; background: #222; position: absolute; top: -28px; border-radius: 5px; }
-        .w-left { left: 0; } .w-right { right: 0; }
+        /* Шкала энергии */
+        #energy-container { width: 80%; margin: 20px auto; background: #dcdde1; height: 12px; border-radius: 10px; overflow: hidden; }
+        #energy-bar { width: 100%; height: 100%; background: var(--accent-color); transition: width 0.2s; }
+        #energy-text { font-weight: bold; color: var(--main-color); }
 
-        .eyes-row { display: flex; } /* Контейнер для глаз */
-        .eye { width: 15px; height: 15px; background: #2c3e50; border-radius: 50%; margin: 0 20px; }
-
-        /* --- НОВЫЙ СТИЛЬ: РОТ --- */
-        #mouth {
-            width: 40px; height: 10px; border-bottom: 4px solid #2c3e50; 
-            border-radius: 50%; margin-top: 20px; transition: 0.1s;
-        }
-        .active #mouth { 
-            height: 25px; background: #c0392b; border-radius: 50%; border: none; 
-        } /* Рот открывается при нажатии */
-
-        .active { transform: scale(0.9) !important; }
-        .active #barbell { transform: translateY(-30px); }
-
+        /* Эффекты */
+        .active { transform: scale(0.95); }
+        .active #mouth { height: 30px; border-radius: 50%; background: #e74c3c; }
         .plus-one {
-            position: fixed; color: #27ae60; font-weight: bold; font-size: 30px;
-            pointer-events: none; animation: moveUp 0.6s ease-out forwards;
+            position: absolute; color: var(--accent-color); font-size: 32px; font-weight: bold;
+            pointer-events: none; animation: fly 0.7s ease-out forwards; z-index: 20;
         }
-        @keyframes moveUp {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-100px); opacity: 0; }
+        @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
+
+        #shop-btn {
+            background: var(--main-color); color: white; border: none; padding: 15px 50px;
+            border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-    <div id="score-container">
-        <div id="score">0</div>
-        <div style="color: #7f8c8d;">ГАНТЕЛИ</div>
+    <div id="ui">
+        <div id="profit">Прибыль: +<span id="p-val">0</span>/сек</div>
+        <p id="score">0</p>
     </div>
 
     <div id="game-area">
-        <div id="tooth-btn">
-            <div id="barbell">
-                <div class="weight w-left"></div>
-                <div class="weight w-right"></div>
-            </div>
-            <div class="eyes-row">
-                <div class="eye"></div>
-                <div class="eye"></div>
-            </div>
-            <!-- ДОБАВИЛИ РОТ -->
+        <div id="tooth">
+            <div class="eye-row"><div class="eye"></div><div class="eye"></div></div>
             <div id="mouth"></div>
         </div>
     </div>
 
-    <script src="https://telegram.org"></script>
+    <div id="energy-text">⚡ <span id="e-num">1000</span> / 1000</div>
+    <div id="energy-container"><div id="energy-bar"></div></div>
+
+    <button id="shop-btn" onclick="buyUpgrade()">УЛУЧШИТЬ (+1/сек) — <span id="cost">50</span> 💰</button>
+
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+        // Данные игры
+        let score = parseInt(localStorage.getItem('z_sc')) || 0;
+        let profit = parseInt(localStorage.getItem('z_pr')) || 0;
+        let cost = parseInt(localStorage.getItem('z_co')) || 50;
+        let energy = 1000;
+        const maxEnergy = 1000;
 
-        let count = parseInt(localStorage.getItem('zub_score')) || 0;
+        // Элементы
         const scoreEl = document.getElementById('score');
-        const tooth = document.getElementById('tooth-btn');
+        const profitEl = document.getElementById('p-val');
+        const energyEl = document.getElementById('energy-bar');
+        const energyNum = document.getElementById('e-num');
+        const costEl = document.getElementById('cost');
+        const tooth = document.getElementById('tooth');
 
-        scoreEl.innerText = count;
-
-        function handleTap(e) {
-            count++;
-            scoreEl.innerText = count;
-            localStorage.setItem('zub_score', count);
-
-            // КЛЮЧЕВОЕ ДЕЙСТВИЕ: добавляем класс active. 
-            // Благодаря CSS, это изменит и масштаб, и штангу, и рот.
-            tooth.classList.add('active');
-            setTimeout(() => tooth.classList.remove('active'), 100);
-
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
-
-            const touch = e.touches ? e.touches[0] : e;
-            const p = document.createElement('div');
-            p.className = 'plus-one';
-            p.innerText = '+1';
-            p.style.left = touch.clientX + 'px';
-            p.style.top = touch.clientY + 'px';
-            document.body.appendChild(p);
-            setTimeout(() => p.remove(), 600);
+        // Обновление цифр
+        function updateUI() {
+            scoreEl.innerText = Math.floor(score).toLocaleString();
+            profitEl.innerText = profit;
+            costEl.innerText = cost;
+            energyNum.innerText = Math.floor(energy);
+            energyEl.style.width = (energy / maxEnergy * 100) + '%';
         }
 
-        tooth.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            handleTap(e);
-        });
-        tooth.addEventListener('mousedown', (e) => {
-            handleTap(e);
-        });
+        // Клик
+        function tap(e) {
+            if (energy >= 1) {
+                score += 1;
+                energy -= 1;
+                
+                // Визуальные эффекты
+                tooth.classList.add('active');
+                setTimeout(() => tooth.classList.remove('active'), 100);
+                
+                const x = e.touches ? e.touches[0].clientX : e.clientX;
+                const y = e.touches ? e.touches[0].clientY : e.clientY;
+                createPlus(x, y);
+                updateUI();
+            }
+        }
+
+        function createPlus(x, y) {
+            const p = document.createElement('div');
+            p.className = 'plus-one'; p.innerText = '+1';
+            p.style.left = x + 'px'; p.style.top = y + 'px';
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 700);
+        }
+
+        // Покупка
+        function buyUpgrade() {
+            if (score >= cost) {
+                score -= cost;
+                profit += 1;
+                cost = Math.floor(cost * 1.6);
+                updateUI();
+                save();
+            }
+        }
+
+        // Движок (пассивный доход и восстановление энергии)
+        setInterval(() => {
+            score += profit / 10; // Добавляем доход (каждые 100мс)
+            if (energy < maxEnergy) energy += 0.5; // Восстанавливаем энергию
+            updateUI();
+        }, 100);
+
+        // Сохранение раз в 3 секунды
+        function save() {
+            localStorage.setItem('z_sc', score);
+            localStorage.setItem('z_pr', profit);
+            localStorage.setItem('z_co', cost);
+        }
+        setInterval(save, 3000);
+
+        // Слушатели
+        tooth.addEventListener('touchstart', (e) => { e.preventDefault(); tap(e); });
+        tooth.addEventListener('mousedown', (e) => tap(e));
+
+        updateUI();
     </script>
 </body>
 </html>
