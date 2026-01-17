@@ -2,124 +2,187 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Зуб-Атлет</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Tooth Lift Pro</title>
     <script src="https://telegram.org"></script>
     <style>
+        :root {
+            --main-bg: #f0f4f8;
+            --accent-color: #3498db;
+            --tooth-size: 180px;
+        }
+
         body {
-            margin: 0; padding: 0;
-            background: linear-gradient(180deg, #87CEEB 0%, #E0F7FA 100%);
-            font-family: 'Arial', sans-serif;
-            overflow: hidden;
-            display: flex; flex-direction: column; align-items: center;
-            height: 100vh; touch-action: manipulation;
+            margin: 0;
+            background-color: var(--main-bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            user-select: none;
+            touch-action: manipulation; /* Убирает задержку клика в мобильных браузерах */
         }
-        #score-container {
-            margin-top: 50px; font-size: 32px; font-weight: bold; color: #2c3e50;
-            background: white; padding: 10px 20px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+
+        /* Контейнер очков с плавной анимацией цифр */
+        .score-board {
+            margin-top: 40px;
+            font-size: 40px;
+            font-weight: 900;
+            color: #2c3e50;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        #game-area {
-            flex-grow: 1; display: flex; align-items: center; justify-content: center; position: relative;
+
+        /* Площадка для игры */
+        .game-container {
+            position: relative;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
         }
-        /* Зуб - можно заменить на <img> */
-        #tooth {
-            width: 200px; height: 200px; cursor: pointer; transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            background: url('https://cdn-icons-png.flaticon.com') no-repeat center/contain; /* Заглушка зуба */
+
+        /* Композиция Зуб + Штанга */
+        .athlete-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.05s;
         }
-        #tooth:active { transform: scale(0.9) translateY(20px); }
+
+        /* Штанга */
         .barbell {
-            position: absolute; width: 250px; height: 40px; background: #333; top: 40%;
-            border-radius: 10px; transition: 0.1s; pointer-events: none;
+            width: 260px;
+            height: 15px;
+            background: #333;
+            border-radius: 10px;
+            position: absolute;
+            top: 20px;
+            z-index: 2;
+            transition: transform 0.1s ease-out;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
-        #top-btn {
-            margin-bottom: 30px; padding: 15px 40px; border-radius: 15px; border: none;
-            background: #27ae60; color: white; font-size: 18px; cursor: pointer;
+        .barbell::before, .barbell::after {
+            content: '';
+            position: absolute;
+            width: 40px; height: 40px;
+            background: #222; border-radius: 5px;
+            top: -12px;
         }
-        /* Модалка ТОПа */
-        #leaderboard {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 10; overflow-y: auto; padding: 20px; box-sizing: border-box;
+        .barbell::before { left: -10px; }
+        .barbell::after { right: -10px; }
+
+        /* Зуб */
+        .tooth {
+            width: var(--tooth-size);
+            height: var(--tooth-size);
+            background: url('https://cdn-icons-png.flaticon.com') no-repeat center/contain;
+            z-index: 1;
         }
-        .user-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+
+        /* Анимация при тапе */
+        .lift-anim .barbell {
+            transform: translateY(-50px); /* Штанга идет вверх */
+        }
+        .lift-anim .tooth {
+            transform: scaleY(0.9) translateY(10px); /* Зуб приседает */
+        }
+
+        /* Кнопка ТОП */
+        .nav-btn {
+            margin-bottom: 40px;
+            background: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            color: var(--accent-color);
+        }
+
+        /* Всплывающий текст +1 */
+        .tap-effect {
+            position: fixed;
+            pointer-events: none;
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 24px;
+            animation: flyUp 0.6s ease-out forwards;
+            z-index: 100;
+        }
+
+        @keyframes flyUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100px); opacity: 0; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="score-container">🏋️‍♂️ <span id="score">0</span></div>
-
-    <div id="game-area">
-        <div id="tooth"></div>
+    <div class="score-board">
+        <span id="score">0</span> 🦾
     </div>
 
-    <button id="top-btn" onclick="showTop()">Посмотреть ТОП-150</button>
-
-    <div id="leaderboard">
-        <h2>Топ-150 качков</h2>
-        <div id="list"></div>
-        <button onclick="closeTop()" style="margin-top:20px; width:100%; padding:15px; background:#e74c3c; color:white; border:none; border-radius:10px;">Закрыть</button>
+    <div class="game-container" id="tap-zone">
+        <div class="athlete-wrapper" id="athlete">
+            <div class="barbell"></div>
+            <div class="tooth"></div>
+        </div>
     </div>
+
+    <button class="nav-btn" onclick="showLeaderboard()">🏆 РЕЙТИНГ ТОП-150</button>
 
     <script>
-        let tg = window.Telegram.WebApp;
+        const tg = window.Telegram.WebApp;
         tg.expand();
+        tg.enableClosingConfirmation();
 
-        let count = localStorage.getItem('dumbbells') || 0;
+        let score = parseInt(localStorage.getItem('user_score')) || 0;
         const scoreEl = document.getElementById('score');
-        const tooth = document.getElementById('tooth');
-        scoreEl.innerText = count;
+        const athlete = document.getElementById('athlete');
+        const tapZone = document.getElementById('tap-zone');
 
-        // Клик по зубу
-        tooth.addEventListener('click', (e) => {
-            count++;
-            scoreEl.innerText = count;
-            localStorage.setItem('dumbbells', count);
+        scoreEl.innerText = score;
+
+        // Эффективный обработчик тапов
+        tapZone.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Убирает системные жесты
             
-            // Простая вибрация (Haptic Feedback)
-            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            // 1. Увеличиваем счет
+            score++;
+            scoreEl.innerText = score;
+            localStorage.setItem('user_score', score);
 
-            // Создание эффекта "+1"
-            createFloatingText(e.clientX, e.clientY);
+            // 2. Визуальная анимация
+            athlete.classList.remove('lift-anim');
+            void athlete.offsetWidth; // Магия для перезапуска анимации
+            athlete.classList.add('lift-anim');
+
+            // 3. Виброотклик Telegram
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+
+            // 4. Текст +1 в месте клика
+            const touch = e.touches[0];
+            showTapEffect(touch.clientX, touch.clientY);
         });
 
-        function createFloatingText(x, y) {
-            const txt = document.createElement('div');
-            txt.innerText = '+1 🦾';
-            txt.style.position = 'fixed';
-            txt.style.left = x + 'px';
-            txt.style.top = y + 'px';
-            txt.style.color = '#2980b9';
-            txt.style.fontWeight = 'bold';
-            txt.style.pointerEvents = 'none';
-            document.body.appendChild(txt);
-            
-            let pos = y;
-            let interval = setInterval(() => {
-                pos -= 2;
-                txt.style.top = pos + 'px';
-                txt.style.opacity -= 0.05;
-                if (txt.style.opacity <= 0) {
-                    clearInterval(interval);
-                    txt.remove();
-                }
-            }, 20);
+        function showTapEffect(x, y) {
+            const effect = document.createElement('div');
+            effect.className = 'tap-effect';
+            effect.innerText = '+1';
+            effect.style.left = `${x}px`;
+            effect.style.top = `${y}px`;
+            document.body.appendChild(effect);
+            setTimeout(() => effect.remove(), 600);
         }
 
-        function showTop() {
-            document.getElementById('leaderboard').style.display = 'block';
-            const list = document.getElementById('list');
-            list.innerHTML = '';
-            
-            // Имитация данных (в реальности нужно делать fetch запрос к вашему серверу)
-            for (let i = 1; i <= 150; i++) {
-                const item = document.createElement('div');
-                item.className = 'user-item';
-                item.innerHTML = `<span>${i}. Игрок_${i}</span> <b>${Math.floor(10000/i)} 🦾</b>`;
-                list.appendChild(item);
-            }
-        }
-
-        function closeTop() {
-            document.getElementById('leaderboard').style.display = 'none';
+        function showLeaderboard() {
+            // Здесь будет логика открытия топа (напишем в следующем шаге)
+            tg.showAlert("Рейтинг загружается...");
         }
     </script>
 </body>
