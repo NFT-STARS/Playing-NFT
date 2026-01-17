@@ -2,217 +2,186 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Зуб-Тапер 2026</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Зуб-Тяжелоатлет</title>
     <style>
-        :root { --main-color: #2c3e50; --accent-color: #27ae60; --shop-color: #9b59b6; --dia-color: #00d2ff; }
-        body { 
-            margin: 0; background: radial-gradient(circle, #ffffff 0%, #e0f0ff 100%); 
-            font-family: 'Segoe UI', sans-serif; text-align: center; overflow: hidden; touch-action: none; 
+        :root {
+            --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32;
         }
+        body { margin: 0; font-family: 'Arial', sans-serif; background: #e0f7fa; overflow: hidden; user-select: none; }
         
-        .wood-board { background: linear-gradient(45deg, #5D2E0A, #8B4513); border: 4px solid #3E1F07; border-radius: 10px; color: #FFD700; display: inline-block; padding: 5px 20px; font-weight: bold; margin-top: 10px; }
-        .dia-container { position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.9); padding: 5px 12px; border-radius: 20px; border: 2px solid var(--dia-color); color: var(--dia-color); font-weight: bold; z-index: 100; }
-
-        .top-item { display: flex; align-items: center; padding: 10px; margin: 5px auto; width: 90%; border-radius: 12px; background: #fff; border: 2px solid #ddd; }
-        .rank-1 { border: 3px solid #FFD700 !important; background: #fffdf0 !important; }
-        .rank-2 { border: 3px solid #C0C0C0 !important; background: #f8f8f8 !important; }
-        .rank-3 { border: 3px solid #CD7F32 !important; background: #fff5ed !important; }
+        /* Главный экран */
+        #game-screen { display: flex; flex-direction: column; align-items: center; height: 100vh; position: relative; }
         
-        .medal-circle { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; margin-right: 10px; }
-        .m-1 { background: linear-gradient(#FFD700, #DAA520); border: 2px solid #fff; }
-        .m-2 { background: linear-gradient(#C0C0C0, #808080); border: 2px solid #fff; }
-        .m-3 { background: linear-gradient(#CD7F32, #A0522D); border: 2px solid #fff; }
-        .reward-tag { margin-left: auto; color: var(--dia-color); font-weight: bold; font-size: 13px; background: #e0faff; padding: 2px 6px; border-radius: 8px; }
+        #stats { width: 100%; padding: 10px; display: flex; justify-content: space-around; background: rgba(255,255,255,0.8); font-weight: bold; }
 
-        #game-area { height: 40vh; display: flex; justify-content: center; align-items: center; position: relative; margin-top: 20px; }
-        #tooth-container { width: 160px; height: 180px; position: relative; transition: transform 0.1s; cursor: pointer; user-select: none; }
-        #tooth { width: 100%; height: 100%; background: white; border: 6px solid #dcdde1; border-radius: 40% 40% 50% 50% / 20% 20% 80% 80%; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; z-index: 11; }
-        .limb { position: absolute; background: #f1f2f6; border: 4px solid #dcdde1; border-radius: 20px; }
-        .arm { width: 12px; height: 50px; top: 70px; }
-        .left-arm { left: -20px; transform: rotate(20deg); }
-        .right-arm { right: -20px; transform: rotate(-20deg); }
-        .leg { width: 20px; height: 40px; bottom: -25px; }
-        .left-leg { left: 30px; } .right-leg { right: 30px; }
-        .active-squat { transform: scale(0.9, 0.8) translateY(15px); }
+        /* Анимация зуба */
+        #tooth-container { margin-top: 100px; position: relative; cursor: pointer; transition: transform 0.1s; }
+        #tooth-container:active { transform: scale(0.95); }
+        #tooth { width: 150px; height: 180px; background: white; border-radius: 30% 30% 40% 40%; border: 4px solid #333; position: relative; box-shadow: 0 10px 0 #ccc; }
+        #tooth::before, #tooth::after { content: ''; position: absolute; bottom: -20px; width: 40px; height: 40px; background: white; border: 4px solid #333; border-radius: 50%; }
+        #tooth::before { left: 10px; } #tooth::after { right: 10px; }
+        
+        #barbell { position: absolute; top: 0; left: -50px; width: 250px; height: 15px; background: #333; transition: top 0.1s; border-radius: 10px; }
+        .weight { position: absolute; width: 40px; height: 80px; background: #555; top: -32px; border-radius: 5px; }
+        .weight.left { left: 0; } .weight.right { right: 0; }
 
-        .screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 200; background: white; padding-top: 20px; overflow-y: auto; }
-        .btn { background: var(--main-color); color: white; border: none; padding: 10px 15px; border-radius: 12px; font-weight: bold; cursor: pointer; outline: none; }
-        .buy-energy-btn { display: none; background: #e67e22; width: 80%; margin: 10px auto; }
+        /* Кнопки меню */
+        .btn-bottom { position: absolute; bottom: 20px; width: 70px; height: 70px; border-radius: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+        #inv-btn { left: 20px; background: #8b4513; border: 3px solid #5d2e0d; } /* Рюкзак */
+        #top-btn { right: 20px; background: #4caf50; border: 3px solid #2e7d32; }
 
-        .nav-bar { display: flex; gap: 10px; padding: 15px; position: fixed; bottom: 0; width: 100%; box-sizing: border-box; background: white; border-top: 1px solid #ddd; }
+        /* Окна */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; }
+        .modal-content { background: #fff; width: 90%; height: 80%; margin: 10% auto; border-radius: 20px; position: relative; padding: 20px; overflow-y: auto; }
+        #inventory-view { background: #d2b48c; background-image: radial-gradient(#a0522d 1px, transparent 1px); background-size: 20px 20px; }
+
+        /* Таблица ТОП */
+        .top-entry { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #eee; margin-bottom: 5px; }
+        .medal { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-weight: bold; border: 2px solid #000; }
+        .rank-1 { border-color: var(--gold); background: #fff9c4; outline: 3px solid var(--gold); }
+        .rank-2 { border-color: var(--silver); background: #f5f5f5; outline: 3px solid var(--silver); }
+        .rank-3 { border-color: var(--bronze); background: #efebe9; outline: 3px solid var(--bronze); }
+        .gold-m { background: var(--gold); } .silver-m { background: var(--silver); } .bronze-m { background: var(--bronze); }
+        
+        .timer { font-size: 0.8em; color: #ff5252; text-align: center; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-    <div class="dia-container">💎 <span id="dia-val">0</span></div>
-    <button class="btn" style="position:fixed; top:15px; left:15px; z-index:110;" onclick="toggleScreen('top-screen', true)">🏆 ТОП</button>
 
-    <div id="top-screen" class="screen">
-        <h2 id="top-title">🏆 РЕЙТИНГ 2026</h2>
-        <div id="top-timer" style="color: #e74c3c; font-weight: bold; margin-bottom: 10px;"></div>
-        <div style="display:flex; justify-content:center; gap:5px; margin-bottom:15px;">
-            <button class="btn" onclick="changeTab('day')">День</button>
-            <button class="btn" onclick="changeTab('week')">Неделя</button>
-            <button class="btn" onclick="changeTab('all')">Постоянный</button>
+    <div id="game-screen">
+        <div id="stats">
+            <div>Очки: <span id="score">0</span></div>
+            <div>⚡ Энергия: <span id="energy">100</span>/100</div>
         </div>
-        <div id="leaderboard"></div>
-        <button class="btn" onclick="toggleScreen('top-screen', false)" style="background:#e74c3c; margin: 20px;">ЗАКРЫТЬ</button>
-    </div>
 
-    <div id="ui" style="margin-top: 60px;">
-        <div class="wood-board">Клик: +<span id="p-val">1</span></div>
-        <p id="score" style="font-size:50px; font-weight:900; margin:10px 0;">0</p>
-    </div>
-
-    <div id="game-area">
-        <div id="tooth-container" onclick="tap(event)">
+        <div id="tooth-container" onclick="tap()">
+            <div id="barbell">
+                <div class="weight left"></div>
+                <div class="weight right"></div>
+            </div>
             <div id="tooth">
-                <div style="display:flex; margin-bottom:10px;">
-                    <div style="width:15px; height:15px; background:#2c3e50; border-radius:50%; margin:0 10px;"></div>
-                    <div style="width:15px; height:15px; background:#2c3e50; border-radius:50%; margin:0 10px;"></div>
-                </div>
-                <div style="width:30px; height:6px; background:#e74c3c; border-radius:10px;"></div>
+                <div style="position:absolute; top:40px; left:40px; width:15px; height:15px; background:#333; border-radius:50%;"></div>
+                <div style="position:absolute; top:40px; right:40px; width:15px; height:15px; background:#333; border-radius:50%;"></div>
+                <div style="position:absolute; bottom:50px; left:60px; width:30px; height:10px; border-bottom: 3px solid #333; border-radius: 50%;"></div>
             </div>
-            <div class="limb arm left-arm"></div><div class="limb arm right-arm"></div>
-            <div class="limb leg left-leg"></div><div class="limb leg right-leg"></div>
+        </div>
+
+        <div id="inv-btn" class="btn-bottom" onclick="toggleModal('inventory-modal')">🎒</div>
+        <div id="top-btn" class="btn-bottom" onclick="toggleModal('top-modal')">🏆</div>
+    </div>
+
+    <!-- Модалка Инвентаря -->
+    <div id="inventory-modal" class="modal">
+        <div class="modal-content" id="inventory-view">
+            <button onclick="toggleModal('inventory-modal')">Закрыть</button>
+            <h2>Ваш Рюкзак</h2>
+            <div id="inventory-items" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                <!-- Сюда попадут алмазы -->
+            </div>
         </div>
     </div>
 
-    <div style="width:85%; margin:20px auto;">
-        <div id="energy-container" style="background:#dcdde1; height:30px; border-radius:15px; overflow:hidden; border:2px solid #333; position:relative;">
-            <div id="energy-bar" style="width:100%; height:100%; background:var(--accent-color); transition:0.3s;"></div>
-            <div id="energy-info" style="position:absolute; width:100%; top:5px; font-weight:bold; font-size:14px;">
-                ⚡ <span id="e-num">100</span> / 100 (<span id="e-timer">05:00</span>)
-            </div>
+    <!-- Модалка Топ -->
+    <div id="top-modal" class="modal">
+        <div class="modal-content">
+            <button onclick="toggleModal('top-modal')">Закрыть</button>
+            <h2 style="text-align:center">Топ Игроков</h2>
+            <div class="timer" id="daily-timer">Сброс дня через: --:--:--</div>
+            <div id="leaderboard-list"></div>
         </div>
-        <button id="buy-energy" class="btn buy-energy-btn" onclick="buyEnergy()">КУПИТЬ ЭНЕРГИЮ (500 💰)</button>
-    </div>
-
-    <div class="nav-bar">
-        <button class="btn" onclick="buyUpgrade()" style="flex:1">УЛУЧШИТЬ (<span id="cost">50</span>)</button>
-        <button class="btn" style="flex:1; background:var(--shop-color)" onclick="alert('Инвентарь пуст')">ИНВЕНТАРЬ</button>
     </div>
 
     <script>
-        let balance = parseFloat(localStorage.getItem('z_bal')) || 0;
-        let diamonds = parseInt(localStorage.getItem('z_dia')) || 0;
-        let profit = parseFloat(localStorage.getItem('z_pr')) || 1;
-        let cost = parseInt(localStorage.getItem('z_co')) || 50;
-        
-        let energy = parseFloat(localStorage.getItem('z_ene'));
-        if (isNaN(energy)) energy = 100;
-        
-        let lastUpdate = parseInt(localStorage.getItem('z_time')) || Date.now();
-        
-        const maxEnergy = 100;
-        const regenTime = 5 * 60 * 1000; // 5 минут
-        let currentTab = 'day';
+        let score = 0;
+        let energy = 100;
+        let diamonds = 0;
+
+        // Эмуляция данных ТОП-100
+        const mockPlayers = [
+            { name: "Зубной Король", score: 5000 },
+            { name: "Качок2026", score: 4200 },
+            { name: "БелыйКлык", score: 3800 },
+            { name: "Player_1", score: 1200 },
+            { name: "Player_2", score: 900 }
+        ];
+
+        function tap() {
+            if (energy > 0) {
+                score++;
+                energy--;
+                updateUI();
+                animateLift();
+            }
+        }
+
+        function animateLift() {
+            const bar = document.getElementById('barbell');
+            bar.style.top = "-60px";
+            setTimeout(() => { bar.style.top = "0px"; }, 100);
+        }
 
         function updateUI() {
-            document.getElementById('score').innerText = Math.floor(balance).toLocaleString();
-            document.getElementById('dia-val').innerText = diamonds;
-            document.getElementById('p-val').innerText = profit;
-            document.getElementById('cost').innerText = cost;
-            document.getElementById('e-num').innerText = Math.floor(energy);
-            document.getElementById('energy-bar').style.width = (energy / maxEnergy * 100) + '%';
-            document.getElementById('buy-energy').style.display = energy < 1 ? 'block' : 'none';
-            
-            localStorage.setItem('z_bal', balance);
-            localStorage.setItem('z_ene', energy);
-            localStorage.setItem('z_time', lastUpdate);
-            localStorage.setItem('z_dia', diamonds);
-            localStorage.setItem('z_pr', profit);
-            localStorage.setItem('z_co', cost);
+            document.getElementById('score').innerText = score;
+            document.getElementById('energy').innerText = energy;
+            renderInventory();
         }
 
-        function tap(e) {
-            if (energy >= 1) {
-                balance += profit;
-                energy -= 1;
-                // Если энергия была полной, начинаем отсчет восстановления с момента первого клика
-                if (energy === 99) lastUpdate = Date.now();
-                
-                const t = document.getElementById('tooth-container');
-                t.classList.add('active-squat');
-                setTimeout(() => t.classList.remove('active-squat'), 100);
-                updateUI();
-            }
+        function toggleModal(id) {
+            const m = document.getElementById(id);
+            m.style.display = m.style.display === 'block' ? 'none' : 'block';
+            if(id === 'top-modal') renderLeaderboard();
         }
-
-        function buyUpgrade() {
-            if (balance >= cost) {
-                balance -= cost; profit += 1; cost = Math.floor(cost * 1.6); updateUI();
-            }
-        }
-
-        function buyEnergy() {
-            if (balance >= 500) { balance -= 500; energy = maxEnergy; updateUI(); }
-        }
-
-        function toggleScreen(id, show) {
-            document.getElementById(id).style.display = show ? 'block' : 'none';
-            if(show) renderLeaderboard();
-        }
-
-        function changeTab(tab) { currentTab = tab; renderLeaderboard(); }
 
         function renderLeaderboard() {
-            const container = document.getElementById('leaderboard');
-            const rewards = { day: [10, 5, 2, 0, 0], week: [100, 50, 25, 0, 0], all: [0, 0, 0, 0, 0] };
-            let html = '';
-            const names = ["Зубной Король", "Улыбка2026", "Дентист-Про", "Игрок_4", "Вы (игрок)"];
-            const scores = [50000, 25000, 10000, 5000, Math.floor(balance)];
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = "";
+            mockPlayers.sort((a, b) => b.score - a.score).forEach((p, i) => {
+                const pos = i + 1;
+                let rankClass = "";
+                let medalClass = "";
+                if(pos === 1) { rankClass = "rank-1"; medalClass = "gold-m"; }
+                if(pos === 2) { rankClass = "rank-2"; medalClass = "silver-m"; }
+                if(pos === 3) { rankClass = "rank-3"; medalClass = "bronze-m"; }
 
-            names.forEach((name, i) => {
-                let rankClass = i < 3 ? `rank-${i+1}` : '';
-                let medal = i < 3 ? `<div class="medal-circle m-${i+1}">${i+1}</div>` : `<div style="width:40px; font-weight:bold;">${i+1}</div>`;
-                let rewardText = (rewards[currentTab][i] > 0) ? `<div class="reward-tag">+${rewards[currentTab][i]} 💎</div>` : '';
-                html += `<div class="top-item ${rankClass}">${medal} <b>${name}</b> <span style="margin-left:10px">${scores[i]}</span> ${rewardText}</div>`;
+                list.innerHTML += `
+                    <div class="top-entry ${rankClass}">
+                        <div class="medal ${medalClass}">${pos}</div>
+                        <div style="flex-grow:1">${p.name}</div>
+                        <div>${p.score}</div>
+                    </div>
+                `;
             });
-            container.innerHTML = html;
         }
 
-        function processRegen() {
-            const now = Date.now();
-            if (energy < maxEnergy) {
-                const elapsed = now - lastUpdate;
-                if (elapsed >= regenTime) {
-                    const gained = Math.floor(elapsed / regenTime);
-                    energy = Math.min(maxEnergy, energy + gained);
-                    lastUpdate = now - (elapsed % regenTime);
-                }
-                const remaining = regenTime - (now - lastUpdate);
-                const m = Math.floor(remaining / 60000);
-                const s = Math.floor((remaining % 60000) / 1000);
-                document.getElementById('e-timer').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-            } else {
-                document.getElementById('e-timer').innerText = "MAX";
+        function renderInventory() {
+            const inv = document.getElementById('inventory-items');
+            inv.innerHTML = `
+                <div style="background:rgba(255,255,255,0.9); padding:10px; border-radius:10px; text-align:center">
+                    💎<br>Алмазы: ${diamonds}
+                </div>
+            `;
+        }
+
+        // Регенерация энергии (каждые 3 минуты +1)
+        setInterval(() => {
+            if (energy < 100) {
+                energy++;
+                updateUI();
             }
-        }
+        }, 180000); 
 
-        function updateTopTimers() {
+        // Таймер для теста (обратный отсчет до конца дня)
+        setInterval(() => {
             const now = new Date();
-            let target;
-            if (currentTab === 'day') {
-                target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-            } else if (currentTab === 'week') {
-                target = new Date(now);
-                target.setDate(now.getDate() + (7 - (now.getDay() || 7) + 1));
-                target.setHours(0,0,0,0);
-            }
+            const hours = 23 - now.getHours();
+            const mins = 59 - now.getMinutes();
+            const secs = 59 - now.getSeconds();
+            document.getElementById('daily-timer').innerText = 
+                `Сброс дня через: ${hours}:${mins < 10 ? '0'+mins : mins}:${secs < 10 ? '0'+secs : secs}`;
+        }, 1000);
 
-            if (target) {
-                const diff = target - now;
-                const h = Math.floor(diff / 3600000);
-                const m = Math.floor((diff % 3600000) / 60000);
-                const s = Math.floor((diff % 60000) / 1000);
-                document.getElementById('top-timer').innerText = `Обнуление: ${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-            } else {
-                document.getElementById('top-timer').innerText = "Постоянный рейтинг";
-            }
-        }
-
-        setInterval(() => { processRegen(); updateUI(); updateTopTimers(); }, 1000);
+        // Начальная отрисовка
         updateUI();
     </script>
 </body>
