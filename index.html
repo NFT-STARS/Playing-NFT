@@ -27,10 +27,21 @@
         .eye { width: 18px; height: 18px; background: var(--main-color); border-radius: 50%; margin: 0 15px; }
         #mouth { width: 40px; height: 8px; border-radius: 10px; background: var(--main-color); transition: 0.1s; }
 
-        /* Шкала энергии */
-        #energy-container { width: 80%; margin: 20px auto; background: #dcdde1; height: 12px; border-radius: 10px; overflow: hidden; }
-        #energy-bar { width: 100%; height: 100%; background: var(--accent-color); transition: width 60s; }
-        #energy-text { font-weight: bold; color: var(--main-color); }
+        /* Шкала энергии (ИЗМЕНЕНО) */
+        #energy-container { 
+            width: 80%; margin: 20px auto; background: #dcdde1; 
+            height: 25px; /* Увеличил высоту, чтобы текст влез */
+            border-radius: 15px; overflow: hidden; position: relative; border: 2px solid var(--main-color);
+        }
+        #energy-bar { width: 100%; height: 100%; background: var(--accent-color); transition: width 0.3s; }
+        
+        /* Текст внутри полоски (НОВОЕ) */
+        #energy-info {
+            position: absolute; width: 100%; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold; color: var(--main-color); font-size: 14px;
+            pointer-events: none; z-index: 5;
+        }
 
         /* Эффекты */
         .active { transform: scale(0.95); }
@@ -61,46 +72,52 @@
         </div>
     </div>
 
-    <div id="energy-text">⚡ <span id="e-num">1000</span> / 1000</div>
-    <div id="energy-container"><div id="energy-bar"></div></div>
+    <!-- Текст теперь внутри контейнера полоски -->
+    <div id="energy-container">
+        <div id="energy-bar"></div>
+        <div id="energy-info">⚡ <span id="e-num">1000</span> / 1000 | <span id="timer">00:00</span></div>
+    </div>
 
     <button id="shop-btn" onclick="buyUpgrade()">УЛУЧШИТЬ (+1/сек) — <span id="cost">50</span> 💰</button>
 
     <script>
-        // Данные игры
         let score = parseInt(localStorage.getItem('z_sc')) || 0;
         let profit = parseInt(localStorage.getItem('z_pr')) || 0;
         let cost = parseInt(localStorage.getItem('z_co')) || 50;
         let energy = 1000;
-        const maxEnergy = 100;
+        const maxEnergy = 1000;
 
-        // Элементы
         const scoreEl = document.getElementById('score');
         const profitEl = document.getElementById('p-val');
         const energyEl = document.getElementById('energy-bar');
         const energyNum = document.getElementById('e-num');
         const costEl = document.getElementById('cost');
         const tooth = document.getElementById('tooth');
+        const timerEl = document.getElementById('timer');
 
-        // Обновление цифр
         function updateUI() {
             scoreEl.innerText = Math.floor(score).toLocaleString();
             profitEl.innerText = profit;
             costEl.innerText = cost;
             energyNum.innerText = Math.floor(energy);
             energyEl.style.width = (energy / maxEnergy * 100) + '%';
+            
+            if (energy < maxEnergy) {
+                let timeLeft = Math.ceil(maxEnergy - energy); 
+                let m = Math.floor(timeLeft / 60);
+                let s = timeLeft % 60;
+                timerEl.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+            } else {
+                timerEl.innerText = "FULL";
+            }
         }
 
-        // Клик
         function tap(e) {
             if (energy >= 1) {
                 score += 1;
                 energy -= 1;
-                
-                // Визуальные эффекты
                 tooth.classList.add('active');
                 setTimeout(() => tooth.classList.remove('active'), 100);
-                
                 const x = e.touches ? e.touches[0].clientX : e.clientX;
                 const y = e.touches ? e.touches[0].clientY : e.clientY;
                 createPlus(x, y);
@@ -116,7 +133,6 @@
             setTimeout(() => p.remove(), 700);
         }
 
-        // Покупка
         function buyUpgrade() {
             if (score >= cost) {
                 score -= cost;
@@ -127,14 +143,12 @@
             }
         }
 
-        // Движок (пассивный доход и восстановление энергии)
         setInterval(() => {
-            score += profit / 10; // Добавляем доход (каждые 100мс)
-            if (energy < maxEnergy) energy += 1/(5*60*10); // Восстанавливаем энергию
+            score += profit / 10; 
+            if (energy < maxEnergy) energy += 0.1; 
             updateUI();
         }, 100);
 
-        // Сохранение раз в 3 секунды
         function save() {
             localStorage.setItem('z_sc', score);
             localStorage.setItem('z_pr', profit);
@@ -142,9 +156,8 @@
         }
         setInterval(save, 3000);
 
-        // Слушатели
         tooth.addEventListener('touchstart', (e) => { e.preventDefault(); tap(e); });
-        tooth.addEventListener('mousedown', (e) => tap(e));
+        tooth.addEventListener('mousedown', (tap));
 
         updateUI();
     </script>
